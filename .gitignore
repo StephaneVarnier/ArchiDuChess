@@ -1,0 +1,6 @@
+target/*
+.classpath
+.project
+.settings/*
+.metadata/*
+Chesspresso-lib-0.9.2/*
