@@ -1,5 +1,6 @@
 package archiduchess.microservice_onlinegame.modele;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -17,10 +18,15 @@ public class OnlineGame {
 
 	private String timeControl;
 	
-	private String result;
+	private String resultat;
 	private String opening;
 	
+	@Column(length = 3600)
 	private String pgn;
+	
+	public OnlineGame() {
+		// TODO Auto-generated constructor stub
+	}
 
 	public Long getId() {
 		return id;
@@ -54,12 +60,12 @@ public class OnlineGame {
 		this.timeControl = timeControl;
 	}
 
-	public String getResult() {
-		return result;
+	public String getResultat() {
+		return resultat;
 	}
 
-	public void setResult(String result) {
-		this.result = result;
+	public void setResultat(String resultat) {
+		this.resultat = resultat;
 	}
 
 	public String getOpening() {
@@ -77,6 +83,8 @@ public class OnlineGame {
 	public void setPgn(String pgn) {
 		this.pgn = pgn;
 	}
+
+	
 	
 	
 	
