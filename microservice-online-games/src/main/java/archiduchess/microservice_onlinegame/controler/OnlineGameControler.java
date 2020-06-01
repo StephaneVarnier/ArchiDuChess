@@ -27,6 +27,7 @@ import archiduchess.microservice_onlinegame.repository.OnlineGameRepository;
 import chesspresso.game.Game;
 import chesspresso.pgn.PGNReader;
 import chesspresso.pgn.PGNSyntaxError;
+import io.swagger.annotations.ApiOperation;
 
 @RestController
 @RequestMapping(path="/archiduchess")
@@ -40,6 +41,7 @@ public class OnlineGameControler {
 	
 	Logger log = LoggerFactory.getLogger(this.getClass());
 	
+	@ApiOperation(value = "Liste toutes les parties en base.")
 	@GetMapping(path="/onlineGames")
 	public @ResponseBody Iterable<OnlineGame> getAllOnlineGames() {
 				
@@ -47,6 +49,7 @@ public class OnlineGameControler {
 		return limitList(gamesIterable);
 	}
 	
+	@ApiOperation(value = "Liste les parties d'un joueur donné avec les blancs")
 	@GetMapping(path="onlineGames/white/{username}")
 	public @ResponseBody Iterable<OnlineGame> getOnlineGamesByWhiteUsername(@PathVariable String username) {
 	
@@ -54,6 +57,7 @@ public class OnlineGameControler {
         return limitList(gamesIterable);
 	}
 	
+	@ApiOperation(value = "Liste les parties d'un joueur donné avec les noirs")
 	@GetMapping(path="onlineGames/black/{username}")
 	public @ResponseBody Iterable<OnlineGame> getOnlineGamesByBlackUsername(@PathVariable String username) {
 		
@@ -61,6 +65,7 @@ public class OnlineGameControler {
 		return limitList(gamesIterable);
 	}
 	
+	@ApiOperation(value = "Liste les parties d'un joueur donné")
 	@GetMapping(path="onlineGames/{username}")
 	public @ResponseBody Iterable<OnlineGame> getOnlineGamesByUsername(@PathVariable String username) {
 		
@@ -68,6 +73,7 @@ public class OnlineGameControler {
 		return limitList(gamesIterable);
 	}
 	
+	@ApiOperation(value = "Liste les parties d'un joueur donné selon la couleur et le résultat final")
 	@GetMapping(path="onlineGames/{color}/{username}/{resultat}")
 	public @ResponseBody Iterable<OnlineGame> getGamesByUsernameColorResult(@PathVariable String color, @PathVariable String username,  @PathVariable String resultat) {
 		
@@ -81,8 +87,7 @@ public class OnlineGameControler {
 		return limitList(gamesIterable);
 	}
 	
-	
-
+	@ApiOperation(value = "Liste les parties ayant atteint une position donnée sous format FEN")
 	@RequestMapping(value = "onlineGames/fen/**", method = RequestMethod.GET)
 	public @ResponseBody List<OnlineGame> getGamesByFen(HttpServletRequest request) throws PGNSyntaxError, IOException {
 		
@@ -92,6 +97,31 @@ public class OnlineGameControler {
 	    log.info("FEN -------------------------> "+fen);
 	    
 		Iterable<OnlineGame> gamesIterable = onlineGameRepo.findAll();
+		
+		List<OnlineGame> filteredGames= new ArrayList<>();
+
+		for (OnlineGame onlineGame : gamesIterable) {
+			if (contains(onlineGame, fen)) 
+			{
+				filteredGames.add(onlineGame);
+			}
+		}
+		return limitList(filteredGames);
+	}
+
+	@ApiOperation(value = "Liste les parties ayant atteint une position donnée sous format FEN, selon un résultat")
+	@RequestMapping(value = "onlineGames/{resultat}/fen/**", method = RequestMethod.GET)
+	public @ResponseBody List<OnlineGame> getGamesByFenAndResultat(HttpServletRequest request) throws PGNSyntaxError, IOException {
+		
+	    String requestURL = request.getRequestURL().toString();
+	    String fenURL0= requestURL.split("/fen/")[0];
+	    String fenURL1= requestURL.split("/fen/")[1];
+	    
+	    String res= fenURL0.split("onlineGames/")[1];
+	    String fen = java.net.URLDecoder.decode(fenURL1, StandardCharsets.UTF_8.name());
+	    log.info("FEN -------------------------> "+fen);
+	    
+		Iterable<OnlineGame> gamesIterable = onlineGameRepo.findByResultat(res);
 		
 		List<OnlineGame> filteredGames= new ArrayList<>();
 

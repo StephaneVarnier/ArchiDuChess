@@ -21,6 +21,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import archiduchess.microservice_users.exceptions.UserNotFoundException;
 import archiduchess.microservice_users.modele.User;
 import archiduchess.microservice_users.repository.UserRepository;
+import io.swagger.annotations.ApiOperation;
 
 @RestController
 @RequestMapping(path="/archiduchess")
@@ -31,6 +32,7 @@ public class UserControler {
 		
 		Logger log = LoggerFactory.getLogger(this.getClass());
 		
+		@ApiOperation(value = "Ajoute un utilisateur en base")
 		@PostMapping(path="/register")
 		public ResponseEntity<Void> createUser(@Valid @RequestBody User user) {
 			log.info(" =======> " + user.getUsername() + " :: " + user.getPassword() + " :: "+ user.getEmail() + " *******");
@@ -49,11 +51,13 @@ public class UserControler {
 			return ResponseEntity.created(uri).build();
 		}
 		
+		@ApiOperation(value = "Liste tous les utilisateurs en base.")
 		@GetMapping(path="/users")
 		public @ResponseBody Iterable<User> getAllUsers() {
 			return userRepo.findAll();
 		}
 		
+		@ApiOperation(value = "Rechercher un utilisateur par son login")
 		@GetMapping(path="/user/{username}")
 		public @ResponseBody Optional<User> findUserByUsername(@PathVariable String username ) {
 			Optional<User> optionalUser = userRepo.findByUsername(username);
@@ -63,6 +67,7 @@ public class UserControler {
 			return optionalUser;
 		}
 		
+		@ApiOperation(value = "Rechercher un utilisateur par son adresse e-mail")
 		@GetMapping(path="/user/email/{email}")
 		public @ResponseBody Optional<User> findUserByEmail(@PathVariable String email ) {
 			Optional<User> optionalUser = userRepo.findByEmail(email);

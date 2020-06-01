@@ -1,18 +1,17 @@
-package archiduchess.microservice_users;
+package archiduchess.microservice_clientui;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
-
-import springfox.documentation.swagger2.annotations.EnableSwagger2;
+import org.springframework.cloud.openfeign.EnableFeignClients;
 
 @SpringBootApplication
-@EnableSwagger2
+@EnableFeignClients("archiduchess.microservice_clientui")
 @EnableDiscoveryClient
-public class MicroserviceUsersApplication {
+public class MicroserviceClientuiApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(MicroserviceUsersApplication.class, args);
+		SpringApplication.run(MicroserviceClientuiApplication.class, args);
 	}
 
 }

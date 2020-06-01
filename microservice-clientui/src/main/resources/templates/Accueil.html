@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<meta charset="UTF-8">
+	<title>ArchiDuChess</title>
+</head>
+
+<body>
+
+	<h1>ArchiDuChess</h1>
+	
+	<p></p>
+				
+	<form th:action="@{/find-user}" th:object="${userBean}"	method="POST">
+			User Name : <input type="text" th:field="*{username}" /> <br />  
+			<input type="submit" value="Valider" />
+	</form>
+				
+
+	<script type="text/javascript"
+		src="webjars/bootstrap/4.0.0-2/js/bootstrap.min.js">
+		
+	</script>
+
+</body>
+</html>
