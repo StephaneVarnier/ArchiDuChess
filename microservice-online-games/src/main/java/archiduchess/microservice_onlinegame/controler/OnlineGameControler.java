@@ -55,6 +55,25 @@ public class OnlineGameControler {
 		return onlineGameRepo.findGameById(id);
 	}
 	
+	@ApiOperation(value = "Recherche les positions d'une partie par id")
+	@GetMapping(path="/onlineGame/{id}/fens")
+	public @ResponseBody List<String> getFensById(@PathVariable long id) throws PGNSyntaxError, IOException {
+		OnlineGame onlineGame = onlineGameRepo.findGameById(id);
+		Game game = this.parseOnlineGame(onlineGame);
+		List<String> fens = new ArrayList<>();
+		
+		game.gotoStart();
+		do  {
+			fens.add(game.getPosition().getFEN());
+			game.goForward();
+		} while (game.hasNextMove());
+		
+		fens.add(game.getPosition().getFEN());
+		return fens;
+		
+		
+	}
+	
 	
 	@ApiOperation(value = "Liste les parties d'un joueur donné avec les blancs")
 	@GetMapping(path="onlineGames/white/{username}")

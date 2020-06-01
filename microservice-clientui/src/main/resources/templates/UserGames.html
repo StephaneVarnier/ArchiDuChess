@@ -28,6 +28,7 @@
 		<thead>
 			<tr>
 				<th th:text="Id"></th>
+				
 				<th th:text="White"></th>
 				<th th:text="Black"></th>
 				<th th:text="Result"></th>
@@ -39,8 +40,7 @@
 								
 								
 				<td><a th:href="@{|/fen-list/${game.id}|}" th:text="${game.id}"> </a></td>
-				<td><a th:href="@{|https://www.chess.com/live/game/${game.id}|}"
-					th:text="-> chess.com"> </a></td>
+				
 				<td th:text="${game.playerWhite}"></td>
 				<td th:text="${game.playerBlack}"></td>
 				<td th:text="${game.resultat}"></td>

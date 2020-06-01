@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -48,12 +49,14 @@ public class ClientController {
 		return "UserGames";
 	}
 	
-//	@GetMapping(value="/fen-list/{id}")
-//	public String fenList(Long id, Model model ) {
-//		OnlineGameBean gameBean = mGameProxy.findGameById(id);
-//		List<String> fens = 
-//		
-//		return "FenList";
-//	}
+	@GetMapping(value="/fen-list/{id}")
+	public String fenList(@PathVariable Long id, Model model ) {
+		//OnlineGameBean gameBean = mGameProxy.findGameById(id);
+		log.info("id -----------> " +id);
+		List<String> fens = mGameProxy.findFensById(id);
+		
+		model.addAttribute("fens", fens);
+		return "FenList";
+	}
 	
 }

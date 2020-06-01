@@ -15,7 +15,10 @@ public interface MicroserviceOnlineGameProxy {
 		public List<OnlineGameBean> findGamesByUsername(@PathVariable String username);
 
 		@GetMapping(path="/archiduchess/onlineGame/{id}")
-		public OnlineGameBean findGameById(Long id);
+		public OnlineGameBean findGameById(@PathVariable Long id);
+
+		@GetMapping(path="/archiduchess/onlineGame/{id}/fens")
+		public List<String> findFensById(@PathVariable Long id);
 		
 		
 }

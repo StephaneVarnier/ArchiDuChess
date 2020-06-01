@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<meta charset="UTF-8">
+	<title>Fen List</title>
+</head>
+
+<body>
+
+	<h1>Fens</h1>
+	
+	<p></p>
+				
+	
+		
+	
+	<table>
+		<thead>
+			<tr>
+				<th th:text="FEN"></th>
+						
+			</tr>
+		</thead>
+		<tbody>
+			<tr th:each="fen : ${fens}">
+				<td th:text="${fen}"></td>
+				
+			</tr>
+		</tbody>
+	</table>
+
+	<script type="text/javascript"
+		src="webjars/bootstrap/4.0.0-2/js/bootstrap.min.js">
+		
+	</script>
+
+</body>
+</html>
