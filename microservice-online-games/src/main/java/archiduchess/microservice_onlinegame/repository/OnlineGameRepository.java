@@ -18,7 +18,9 @@ public interface OnlineGameRepository extends CrudRepository<OnlineGame,  Intege
 
 	Iterable<OnlineGame> findByPlayerWhiteAndResultat(String username, String resultat);
 
-	Iterable<OnlineGame> findByResultat(String res);	
+	Iterable<OnlineGame> findByResultat(String res);
+
+	OnlineGame findGameById(long id);	
 	
 	
 }

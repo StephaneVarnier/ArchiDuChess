@@ -8,11 +8,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import archiduchess.microservice_clientui.bean.OnlineGameBean;
 
-@FeignClient(name="microservice-onlineGame")
+@FeignClient(name="microservice-onlineGame", url="localhost:9999")
 public interface MicroserviceOnlineGameProxy {
 
 		@GetMapping(path="/archiduchess/onlineGames/{username}")
-		public List<OnlineGameBean> FindGamesByUsername(@PathVariable String userName);
+		public List<OnlineGameBean> findGamesByUsername(@PathVariable String username);
+
+		@GetMapping(path="/archiduchess/onlineGame/{id}")
+		public OnlineGameBean findGameById(Long id);
 		
 		
 }

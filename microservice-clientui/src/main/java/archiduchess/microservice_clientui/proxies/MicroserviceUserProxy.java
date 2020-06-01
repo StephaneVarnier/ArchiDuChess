@@ -9,11 +9,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import archiduchess.microservice_clientui.bean.UserBean;
 
-@FeignClient(name="microservice-user")
+@FeignClient(name="microservice-user", url="localhost:9998")
 public interface MicroserviceUserProxy {
 
-		@GetMapping(path="/archiduchess/users/{username}")
-		public Optional<UserBean> FindUserByUsername(@PathVariable String username);
+		@GetMapping(path="/archiduchess/user/{username}")
+		public UserBean findUserByUsername(@PathVariable String username);
 		
 		
 }

@@ -49,6 +49,13 @@ public class OnlineGameControler {
 		return limitList(gamesIterable);
 	}
 	
+	@ApiOperation(value = "Recherche une partie par id")
+	@GetMapping(path="/onlineGame/{id}")
+	public @ResponseBody OnlineGame getGameById(@PathVariable long id) {
+		return onlineGameRepo.findGameById(id);
+	}
+	
+	
 	@ApiOperation(value = "Liste les parties d'un joueur donné avec les blancs")
 	@GetMapping(path="onlineGames/white/{username}")
 	public @ResponseBody Iterable<OnlineGame> getOnlineGamesByWhiteUsername(@PathVariable String username) {

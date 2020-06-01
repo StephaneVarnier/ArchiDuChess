@@ -12,12 +12,41 @@
 	
 	<p></p>
 				
-	User Name: <td th:text="${userBean.userName}"></td> 
+	User Name: <td th:text="${user.username}"></td> 
 				<br /> 
 				
-	Email Address: <td th:text="${userBean.email}"></td> 
+	Email Address: <td th:text="${user.email}"></td> 
 				<br /> 
 				
+	<br/> 
+	<br/> 
+	<br/> 
+	<br/> 
+	
+	
+	<table>
+		<thead>
+			<tr>
+				<th th:text="Id"></th>
+				<th th:text="White"></th>
+				<th th:text="Black"></th>
+				<th th:text="Result"></th>
+		
+			</tr>
+		</thead>
+		<tbody>
+			<tr th:each="game : ${games}" class="col-md-4 my-1">
+								
+								
+				<td><a th:href="@{|/fen-list/${game.id}|}" th:text="${game.id}"> </a></td>
+				<td><a th:href="@{|https://www.chess.com/live/game/${game.id}|}"
+					th:text="-> chess.com"> </a></td>
+				<td th:text="${game.playerWhite}"></td>
+				<td th:text="${game.playerBlack}"></td>
+				<td th:text="${game.resultat}"></td>
+			</tr>
+		</tbody>
+	</table>
 
 	<script type="text/javascript"
 		src="webjars/bootstrap/4.0.0-2/js/bootstrap.min.js">
