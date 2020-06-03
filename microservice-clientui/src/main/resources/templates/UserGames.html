@@ -3,6 +3,7 @@
 
 <head>
 	<meta charset="UTF-8">
+	<link rel="stylesheet" type="text/css" href="/css/styles.css" />
 	<title>User Online Games</title>
 </head>
 
@@ -28,7 +29,6 @@
 		<thead>
 			<tr>
 				<th th:text="Id"></th>
-				
 				<th th:text="White"></th>
 				<th th:text="Black"></th>
 				<th th:text="Result"></th>
@@ -39,7 +39,7 @@
 			<tr th:each="game : ${games}" class="col-md-4 my-1">
 								
 								
-				<td><a th:href="@{|/fen-list/${game.id}|}" th:text="${game.id}"> </a></td>
+				<td><a th:href="@{|/fen-list-stats/${game.id}/${user.username}|}" th:text="${game.id}"> </a></td>
 				
 				<td th:text="${game.playerWhite}"></td>
 				<td th:text="${game.playerBlack}"></td>

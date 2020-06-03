@@ -3,8 +3,8 @@
 
 <head>
 	<meta charset="UTF-8">
-	<link rel="stylesheet" type="text/css" href="css/styles.css" />
-	<title>Fen List</title>
+	<link rel="stylesheet" type="text/css" href="/css/styles.css" />
+	<title>Fen List Stats</title>
 </head>
 
 <body>
@@ -13,20 +13,22 @@
 	
 	<p></p>
 				
+				
 	
-		
-	
+
 	<table>
 		<thead>
 			<tr>
 				<th th:text="FEN"></th>
-						
+				<th th:text="NumberOfGames"></th>	
+				<th th:text="Results"></th>	
 			</tr>
 		</thead>
 		<tbody>
-			<tr th:each="fen : ${fens}">
-				<td th:text="${fen}"></td>
-				
+			<tr th:each="fen : ${fenBeans}">
+				<td th:text="${fen.fen}"></td>
+				<td th:text="${fen.gameNumber}"></td>
+				<td th:text="${fen.pct}"></td>
 				
 			</tr>
 		</tbody>
