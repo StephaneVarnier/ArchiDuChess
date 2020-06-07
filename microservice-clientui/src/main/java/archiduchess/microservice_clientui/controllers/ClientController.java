@@ -1,11 +1,13 @@
 package archiduchess.microservice_clientui.controllers;
 
-import java.nio.charset.StandardCharsets;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-
-import javax.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +24,10 @@ import archiduchess.microservice_clientui.bean.OnlineGameBean;
 import archiduchess.microservice_clientui.bean.UserBean;
 import archiduchess.microservice_clientui.proxies.MicroserviceOnlineGameProxy;
 import archiduchess.microservice_clientui.proxies.MicroserviceUserProxy;
+import chesspresso.game.Game;
+import chesspresso.game.view.HTMLGameBrowser;
+import chesspresso.pgn.PGNReader;
+import chesspresso.pgn.PGNSyntaxError;
 
 @Controller
 public class ClientController {
@@ -55,7 +61,7 @@ public class ClientController {
 	}
 	
 	@GetMapping(value="/fen-list-stats/{id}/{username}")
-	public String fenListUser(@PathVariable Long id, @PathVariable String username, Model model ) {
+	public String fenListUser(@PathVariable Long id, @PathVariable String username, Model model ) throws PGNSyntaxError, IOException {
 		
 		log.info("id -----------> " +id);
 		log.info("user ---------> " +username);
@@ -75,17 +81,54 @@ public class ClientController {
 		}
 		
 		model.addAttribute("fenBeans", fenBeans);
+		
+		displayGameById(id, model);
 		return "FenListStats";
 	}
 	
 	@GetMapping(value="/fen-list/{id}")
 	public String fenList(@PathVariable Long id, Model model ) {
 		
-		log.info("id -----------> " +id);
+		log.info("id -------------------> " +id);
 		List<String> fens = mGameProxy.findFensById(id);
 	
 		model.addAttribute("fens", fens);
+		
+			
 		return "FenList";
+	}
+	
+	@GetMapping(value="/display/{id}") 
+	public String displayGameById(@PathVariable Long id, Model model ) throws PGNSyntaxError, IOException {
+		
+		log.info("displaying game ------> " +id); 
+				
+		OnlineGameBean gameBean = mGameProxy.findGameById(id);
+		
+		HTMLGameBrowser html = new HTMLGameBrowser() ;
+		Game game = parseOnlineGame(gameBean);
+		
+		String path = "D:\\ArchiDuChess\\ArchiDuChess\\microservice-clientui\\src\\main\\resources\\templates\\";
+		OutputStream os = new FileOutputStream(path+"GameToInclude.html");
+		
+		html.produceHTML(os, game);
+		os.close();
+		//html.produceHTML(System.out, game);
+		
+//		int millis = 10000;
+//
+//		try {
+//		    Thread.sleep(millis);
+//		} catch (InterruptedException ie) {}
+//		   
+		return "GameDisplay";
+		
+	}
+	
+	@GetMapping(value="/display")
+	public String displayGame(Model model) 
+	{
+		return "GameToInclude";
 	}
 	
 	public String pctCalculate(List<OnlineGameBean> games , String username) {
@@ -113,6 +156,28 @@ public class ClientController {
 			return 0.5;
 		}
 		return 0;
+	}
+	
+	///////////////////////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////////////
+	
+	public Game parseOnlineGame(OnlineGameBean onlineGameBean) throws PGNSyntaxError, IOException {
+		String pgnStr = removeClk(onlineGameBean.getPgn(), "{[", "]}");
+
+		InputStream is = new ByteArrayInputStream(pgnStr.getBytes());
+		PGNReader pgn = new PGNReader(is, "");
+		return pgn.parseGame();
+		
+	}
+	
+	public static String removeClk(String str, String start, String end) {
+		StringBuilder sb = new StringBuilder(str);
+		while (sb.toString().contains(end)) {
+			int endIndex = sb.lastIndexOf(end);
+			int startIndex = sb.lastIndexOf(start);
+			sb = sb.delete(startIndex, endIndex+start.length());
+		}
+		return sb.toString();
 	}
 	
 }
