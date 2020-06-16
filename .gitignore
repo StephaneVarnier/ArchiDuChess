@@ -6,3 +6,5 @@ target/*
 Chesspresso-lib-0.9.2/*
 Chesspresso-lib-0.9.2-src/*
 saves/*
+nodeServer/*
+adc-front/node_modules/*

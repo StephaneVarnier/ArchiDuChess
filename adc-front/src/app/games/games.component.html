@@ -1,0 +1,25 @@
+<div class="row">
+    <div class="col-sm-4">
+        <div class="card">
+            <div class="card-header bg-primary text-light">YOUR GAMES</div>
+            <div class="card-body">
+
+                <select [(ngModel)]="selectedGame" size="8" style="width:50%" (change)="onChangeSelectedGame()">
+                    <option *ngFor="let gam of games" [ngValue]="gam">{{gam.playerWhite}} - {{gam.playerBlack}} -
+                        {{gam.resultat}}</option>
+                </select>
+
+
+            </div>
+        </div>
+    </div>
+
+    <div class="col-7">
+        <div class="card">
+            <div class="card-header bg-primary text-light">{{gameLabel}}</div>
+            <div class="card-body">
+                    {{gamePGN}}
+            </div>
+        </div>
+    </div>
+</div>
