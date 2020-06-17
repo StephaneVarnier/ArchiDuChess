@@ -50,13 +50,13 @@ public class OnlineGameControler {
 	}
 	
 	@ApiOperation(value = "Recherche une partie par id")
-	@GetMapping(path="/onlineGame/{id}")
+	@GetMapping(path="/onlineGames/{id}")
 	public @ResponseBody OnlineGame getGameById(@PathVariable long id) {
 		return onlineGameRepo.findGameById(id);
 	}
 	
 	@ApiOperation(value = "Recherche les positions d'une partie par id")
-	@GetMapping(path="/onlineGame/{id}/fens")
+	@GetMapping(path="/onlineGames/{id}/fens")
 	public @ResponseBody List<String> getFensById(@PathVariable long id) throws PGNSyntaxError, IOException {
 		OnlineGame onlineGame = onlineGameRepo.findGameById(id);
 		Game game = this.parseOnlineGame(onlineGame);
@@ -70,9 +70,43 @@ public class OnlineGameControler {
 		
 		fens.add(game.getPosition().getFEN());
 		return fens;
-		
-		
 	}
+	
+	@ApiOperation(value = "Recherche les coups d'une partie par id sous format LAN - long annotation")
+	@GetMapping(path="/onlineGames/{id}/lans")
+	public @ResponseBody List<String> getLansById(@PathVariable long id) throws PGNSyntaxError, IOException {
+		OnlineGame onlineGame = onlineGameRepo.findGameById(id);
+		Game game = this.parseOnlineGame(onlineGame);
+		List<String> moves = new ArrayList<>();
+		
+		game.gotoStart();
+		do  {
+			moves.add(game.getNextMove().getLAN());
+			game.goForward();
+		} while (game.hasNextMove());
+		
+		//moves.add(game.getPosition().getFEN());
+		return moves;
+	}
+	
+	@ApiOperation(value = "Recherche les coups d'une partie par id sous format SAN - short annotation")
+	@GetMapping(path="/onlineGames/{id}/sans")
+	public @ResponseBody List<String> getSansById(@PathVariable long id) throws PGNSyntaxError, IOException {
+		OnlineGame onlineGame = onlineGameRepo.findGameById(id);
+		Game game = this.parseOnlineGame(onlineGame);
+		List<String> moves = new ArrayList<>();
+		
+		game.gotoStart();
+		do  {
+			moves.add(game.getNextMove().getSAN());
+			game.goForward();
+		} while (game.hasNextMove());
+		
+		//moves.add(game.getPosition().getFEN());
+		return moves;
+	}
+	
+	
 	
 	
 	@ApiOperation(value = "Liste les parties d'un joueur donné avec les blancs")
@@ -134,6 +168,8 @@ public class OnlineGameControler {
 		}
 		return limitList(filteredGames);
 	}
+	
+	
 
 	@ApiOperation(value = "Liste les parties ayant atteint une position donnée sous format FEN, selon un résultat")
 	@RequestMapping(value = "onlineGames/{resultat}/fen/**", method = RequestMethod.GET)

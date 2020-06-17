@@ -1,0 +1,17 @@
+$size : 100px;
+
+#board1 { 
+    width: 4*$size
+}
+
+.btn {
+    width : $size;
+   
+    background-color :  #b58863;
+    color: #f0d9b5;
+}
+
+#tmoves {
+    width : $size;
+
+}

@@ -30,10 +30,14 @@
             "styles": [
               "src/styles.scss",
               "./node_modules/bootstrap/dist/css/bootstrap.min.css",
-              "./node_modules/font-awesome/css/font-awesome.min.css"
+              "./node_modules/font-awesome/css/font-awesome.min.css",
+              "./node_modules/@chrisoakman/chessboardjs/css/chessboard-1.0.0.css"
             ],
             "scripts": [
-
+              "./node_modules/jquery/dist/jquery.slim.js",
+              "./node_modules/popper.js/dist/umd/popper.js",
+              "./node_modules/bootstrap/dist/js/bootstrap.js",
+              "./node_modules/@chrisoakman/chessboardjs/js/chessboard-1.0.0.js"
             ]
           },
           "configurations": {
@@ -93,13 +97,21 @@
             "karmaConfig": "karma.conf.js",
             "assets": [
               "src/favicon.ico",
-              "src/assets"
+              "src/assets",
+              {
+                "glob": "**/*.js",
+                "input" : "node_modules/@webcomponents/webcomponentsjs",
+                "output" : "webcomponents/"
+              }
             ],
             "styles": [
               "./node_modules/bootstrap/dist/css/bootstrap.min.css",
               "src/styles.scss"
+             
             ],
-            "scripts": []
+            "scripts": [
+             "node_modules/jquery/dist/jquery.min.js"
+            ]
           }
         },
         "lint": {

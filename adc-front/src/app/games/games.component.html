@@ -4,12 +4,11 @@
             <div class="card-header bg-primary text-light">YOUR GAMES</div>
             <div class="card-body">
 
-                <select [(ngModel)]="selectedGame" size="8" style="width:50%" (change)="onChangeSelectedGame()">
+                <select [(ngModel)]="selectedGame" size="8" style="width:50%" (change)="onChangeSelectedGame()"
+                    (click)="onChangeSelectedGame()">
                     <option *ngFor="let gam of games" [ngValue]="gam">{{gam.playerWhite}} - {{gam.playerBlack}} -
                         {{gam.resultat}}</option>
                 </select>
-
-
             </div>
         </div>
     </div>
@@ -18,8 +17,54 @@
         <div class="card">
             <div class="card-header bg-primary text-light">{{gameLabel}}</div>
             <div class="card-body">
-                    {{gamePGN}}
+
+                <div class="row">
+                    <div class="col-sm-5">
+
+                        <div id="board1"></div>
+                        <div class="btn-group">
+                            <button id="startBtn" class="btn btn-primary fa fa-angle-double-left"
+                                (click)="startGame()"></button>
+                            <button id="withdrawBtn" class="btn btn-primary fa fa-chevron-left"
+                                (click)="withdrawGame()"></button>
+                            <button id="advanceBtn" class="btn btn-primary fa fa-chevron-right"
+                                (click)="advanceGame()"></button>
+                            <button id="lastMoveBtn" class="btn btn-primary fa fa-angle-double-right"
+                                (click)="lastMoveGame()"></button>
+                        </div>
+                        <!-- <br />
+                <br />
+                {{gamePGN}} -->
+                    </div>
+
+
+
+
+                    <div class="col-sm-4">
+                        <table id="tmoves" class="table-bordered table-striped">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>White</th>
+                                    <th>Black</th>
+                                </tr>
+                            </thead>
+                            <tbody *ngFor="let fm of fullMoves">
+                                <tr>
+                                    <td>{{ fm.white }}</td>
+                                    <td>{{ fm.black }}</td>
+                                </tr>
+                            </tbody>
+
+
+                        </table>
+                    </div>
+
+                </div>
             </div>
         </div>
+
+
+
+
+
     </div>
-</div>

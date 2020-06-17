@@ -18,6 +18,20 @@ export class GamesService {
     return this.http.get<Game[]>(this.url)
   }
 
+  public getFens (id : number) : Observable<string[]> {
+
+    let urlFen : string = this.url+"/"+id+"/fens";
+    console.log("urlFen --> "+ urlFen)
+    return this.http.get<string[]>(urlFen)
+  }
+
+  public getSans (id : number) : Observable<string[]> {
+
+    let urlSan : string = this.url+"/"+id+"/sans";
+    console.log("urlSan --> "+ urlSan)
+    return this.http.get<string[]>(urlSan)
+  }
+
     // this.http.get('https://api.github.com/users/didier-tp)    
     // .subscribe(      
     //   data => {  console.log(data);  } , 
