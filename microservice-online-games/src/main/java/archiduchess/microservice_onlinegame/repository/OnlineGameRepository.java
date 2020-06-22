@@ -1,12 +1,15 @@
 package archiduchess.microservice_onlinegame.repository;
 
 import java.util.List;
+import java.util.Optional;
 
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.stereotype.Repository;
 
 import archiduchess.microservice_onlinegame.modele.OnlineGame;
 
-public interface OnlineGameRepository extends CrudRepository<OnlineGame,  Integer> {
+//@Repository
+public interface OnlineGameRepository extends MongoRepository<OnlineGame,  String> {
 	
 	List<OnlineGame> findByPlayerWhite (String playerWhite) ; 
 	
@@ -19,8 +22,15 @@ public interface OnlineGameRepository extends CrudRepository<OnlineGame,  Intege
 	Iterable<OnlineGame> findByPlayerWhiteAndResultat(String username, String resultat);
 
 	Iterable<OnlineGame> findByResultat(String res);
+	
+	//OnlineGame findGameById(String id);
+	
 
-	OnlineGame findGameById(long id);	
+	OnlineGame findGameById(long id);
+
+
+
+
 	
 	
 }

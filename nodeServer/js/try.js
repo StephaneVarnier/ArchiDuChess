@@ -4,6 +4,8 @@ var url = "https://api.chess.com/pub/player/tiou/games/2020/05"
 
 var tabGames = []; // A synchroniser (via api REST) avec le coté serveur
 
+// var ajax_module=require(''/myAjaxUtils')
+
 function makeAjaxGetRequest(url,callback) {
 	var xhr = new XMLHttpRequest();
 	xhr.onreadystatechange = function() {

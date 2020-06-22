@@ -1,17 +1,18 @@
 package archiduchess.microservice_onlinegame.modele;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-@Entity
+//import javax.persistence.Column;
+//import javax.persistence.Entity;
+//import javax.persistence.GeneratedValue;
+//import javax.persistence.GenerationType;
+//import javax.persistence.Id;
+
+@Document(collection = "OnlineGame")
 public class OnlineGame {
 
-	@Id
-	@GeneratedValue(strategy=GenerationType.AUTO)
-	private Long id; 
+	private String id; 
 	
 	private String playerWhite;
 	private String playerBlack;
@@ -21,20 +22,40 @@ public class OnlineGame {
 	private String resultat;
 	private String opening;
 	
-	@Column(length = 3600)
+	//@Column(length = 3600)
 	private String pgn;
 	
 	public OnlineGame() {
 		// TODO Auto-generated constructor stub
 	}
 
-	public Long getId() {
+
+	
+
+
+	public String getId() {
 		return id;
 	}
 
-	public void setId(Long id) {
+
+
+
+
+
+
+
+
+	public void setId(String id) {
 		this.id = id;
 	}
+
+
+
+
+
+
+
+
 
 	public String getPlayerWhite() {
 		return playerWhite;
@@ -84,8 +105,5 @@ public class OnlineGame {
 		this.pgn = pgn;
 	}
 
-	
-	
-	
 	
 }

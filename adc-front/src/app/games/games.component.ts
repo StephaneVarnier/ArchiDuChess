@@ -102,6 +102,7 @@ export class GamesComponent implements OnInit {
 
   displayMovesInTable() : void {
     this.fullMoves.splice(0, this.fullMoves.length);
+    
     if (this.sans.length>0) 
     {
       let n = Math.trunc(this.sans.length/2)

@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -51,39 +52,56 @@ public class OnlineGameControler {
 	
 	@ApiOperation(value = "Recherche une partie par id")
 	@GetMapping(path="/onlineGames/{id}")
-	public @ResponseBody OnlineGame getGameById(@PathVariable long id) {
-		return onlineGameRepo.findGameById(id);
+	public @ResponseBody Optional<OnlineGame> getGameById(@PathVariable String id) throws Exception {
+		log.info("<----------------- "+id+" -------------->" );
+		Optional<OnlineGame> og = onlineGameRepo.findById(id);
+		
+		if (!og.isPresent()) throw new Exception("There is no game "+ id +" !");
+		log.info(og.toString());
+		return og;
+
+		
 	}
 	
 	@ApiOperation(value = "Recherche les positions d'une partie par id")
 	@GetMapping(path="/onlineGames/{id}/fens")
-	public @ResponseBody List<String> getFensById(@PathVariable long id) throws PGNSyntaxError, IOException {
-		OnlineGame onlineGame = onlineGameRepo.findGameById(id);
-		Game game = this.parseOnlineGame(onlineGame);
+	public @ResponseBody List<String> getFensById(@PathVariable String id) throws PGNSyntaxError, IOException {
+		
+		Optional<OnlineGame> onlineGame = onlineGameRepo.findById(id);
 		List<String> fens = new ArrayList<>();
 		
-		game.gotoStart();
-		do  {
+		if (onlineGame.isPresent()) {
+			Game game = this.parseOnlineGame(onlineGame.get());
+				
+			game.gotoStart();
+			do  {
+				fens.add(game.getPosition().getFEN());
+				game.goForward();
+			} while (game.hasNextMove());
+			
 			fens.add(game.getPosition().getFEN());
-			game.goForward();
-		} while (game.hasNextMove());
-		
-		fens.add(game.getPosition().getFEN());
+		}
+				
 		return fens;
 	}
 	
 	@ApiOperation(value = "Recherche les coups d'une partie par id sous format LAN - long annotation")
 	@GetMapping(path="/onlineGames/{id}/lans")
-	public @ResponseBody List<String> getLansById(@PathVariable long id) throws PGNSyntaxError, IOException {
-		OnlineGame onlineGame = onlineGameRepo.findGameById(id);
-		Game game = this.parseOnlineGame(onlineGame);
+	public @ResponseBody List<String> getLansById(@PathVariable String id) throws PGNSyntaxError, IOException {
+		Optional<OnlineGame> onlineGame = onlineGameRepo.findById(id);
 		List<String> moves = new ArrayList<>();
 		
-		game.gotoStart();
-		do  {
-			moves.add(game.getNextMove().getLAN());
-			game.goForward();
-		} while (game.hasNextMove());
+		
+		if (onlineGame.isPresent()) {
+			Game game = this.parseOnlineGame(onlineGame.get());
+			
+			game.gotoStart();
+			do  {
+				moves.add(game.getNextMove().getLAN());
+				game.goForward();
+			} while (game.hasNextMove());
+		}
+		
 		
 		//moves.add(game.getPosition().getFEN());
 		return moves;
@@ -91,16 +109,20 @@ public class OnlineGameControler {
 	
 	@ApiOperation(value = "Recherche les coups d'une partie par id sous format SAN - short annotation")
 	@GetMapping(path="/onlineGames/{id}/sans")
-	public @ResponseBody List<String> getSansById(@PathVariable long id) throws PGNSyntaxError, IOException {
-		OnlineGame onlineGame = onlineGameRepo.findGameById(id);
-		Game game = this.parseOnlineGame(onlineGame);
+	public @ResponseBody List<String> getSansById(@PathVariable String id) throws PGNSyntaxError, IOException {
+		Optional<OnlineGame> onlineGame = onlineGameRepo.findById(id);
 		List<String> moves = new ArrayList<>();
 		
-		game.gotoStart();
-		do  {
-			moves.add(game.getNextMove().getSAN());
-			game.goForward();
-		} while (game.hasNextMove());
+		
+		if (onlineGame.isPresent()) {
+			Game game = this.parseOnlineGame(onlineGame.get());
+			
+			game.gotoStart();
+			do  {
+				moves.add(game.getNextMove().getSAN());
+				game.goForward();
+			} while (game.hasNextMove());
+		}
 		
 		//moves.add(game.getPosition().getFEN());
 		return moves;
@@ -126,7 +148,7 @@ public class OnlineGameControler {
 	}
 	
 	@ApiOperation(value = "Liste les parties d'un joueur donné")
-	@GetMapping(path="onlineGames/{username}")
+	@GetMapping(path="onlineGames/user/{username}")
 	public @ResponseBody Iterable<OnlineGame> getOnlineGamesByUsername(@PathVariable String username) {
 		
 		Iterable<OnlineGame> gamesIterable = onlineGameRepo.findByPlayerBlackOrPlayerWhite(username, username);
