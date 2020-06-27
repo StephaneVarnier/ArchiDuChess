@@ -43,6 +43,9 @@ export class GamesComponent implements OnInit {
   points: number;
   openingEfficiency : number; 
   openingGamesNumber : number; 
+  username : string = "";
+  currentPlayer : string = ""
+  showBack : boolean = false;
 
   fens = [];
   sans = [];
@@ -60,7 +63,7 @@ export class GamesComponent implements OnInit {
     let open = this.selectedOpening == ALL_OPENINGS ? "" : this.selectedOpening;
     console.log(open)
 
-    this.gamesService.getGamesByOpening(open)
+    this.gamesService.getGamesByOpeningAndUsername(open, this.username)
     .subscribe(
       (data) => { 
         this.games = data; 
@@ -107,7 +110,19 @@ export class GamesComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.gamesService.getGames()
+    if (sessionStorage.getItem("champion") != null) 
+    {
+      this.username = sessionStorage.getItem("champion");
+      this.currentPlayer = sessionStorage.getItem("championName");
+      this.showBack= true
+    }
+    else  {
+      this.username = sessionStorage.getItem("user");
+      this.currentPlayer = this.username
+      this.showBack=false
+    }
+
+    this.gamesService.getGamesByUsername(this.username)
       .subscribe(
         (data) => { 
           this.games = data;
@@ -119,7 +134,7 @@ export class GamesComponent implements OnInit {
 
     
 
-    this.gamesService.getOpenings()
+    this.gamesService.getOpeningsByUsername(this.username)
       .subscribe(
         (data) => { this.openings = data },
         (error) => { console.log(error) },
@@ -127,6 +142,12 @@ export class GamesComponent implements OnInit {
       );
 
     this.startGame();
+  }
+
+  backToUser() {
+    sessionStorage.removeItem("champion")
+    sessionStorage.removeItem("championName")
+    this.ngOnInit();
   }
 
   startGame(): void {
@@ -190,9 +211,7 @@ export class GamesComponent implements OnInit {
   displayStats(): void {
 
     if (this.moveNumber >= -1) {
-      console.log("moveNb ---> " + this.moveNumber);
-      console.log("stats ----> " + JSON.stringify(this.stats[this.moveNumber]));
-
+    
       this.playedGamesByPosition = this.stats[this.moveNumber + 1].playedGames
       console.log(this.playedGamesByPosition)
       this.points = this.stats[this.moveNumber + 1].points / 100
@@ -201,7 +220,7 @@ export class GamesComponent implements OnInit {
   }
 
   getStats(): void {
-    this.gamesService.getStats(this.gameId)
+    this.gamesService.getMyStats(this.gameId)
       .subscribe(
         (data: FenStat[]) => { this.stats = data }
       );

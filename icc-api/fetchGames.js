@@ -2,41 +2,82 @@ const fetch = require("node-fetch");
 const mongoClient = require('./my_generic_mongo_client')
 const RULE = "chess"
 
-var user = "tiou"
+//var user = "tiou"
 var year = "2020"
 
+const URL_LEADERS = "http://localhost:9997/archiduchess/leaders"
+const URL_USERS = "http://localhost:9998/archiduchess/users"
+const ONLINE_GAME = 'OnlineGame'
 
-const getDataAndPersist = async url => {
-  try {
-    const response = await fetch(url);
-    const json = await response.json();
-    
-    fillMongoDbWithJson(json);
-  } catch (error) {
-    console.log(error);
-  }
-};
-
-// const getData = async url => {
+// const getDataAndPersist = async url => {
 //   try {
 //     const response = await fetch(url);
 //     const json = await response.json();
-    
-//     return(json);
 
+//     fillMongoDbWithJson(json);
 //   } catch (error) {
 //     console.log(error);
 //   }
 // };
 
-function getGames() {
-for (let month = 6; month > 0; month-- ) {
 
-  let url = "https://api.chess.com/pub/player/"+user+"/games/"+year+"/0"+month;
-  getDataAndPersist(url);
-  console.log ("archive "+url+" downloaded" )
-  
+
+async function getData(url) {
+  try {
+    const response = await fetch(url);
+    const json = await response.json();
+
+    return (json);
+
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
+};
+
+async function getDataAndPersist(url) {
+  try {
+    let json = await getData(url);
+    console.log(url);
+    console.log(json.games.length)
+    if (json != null) fillMongoDbWithJson(json);
+  }
+  catch (error) {
+    console.log(error);
+  }
 }
+
+async function getGames(user) {
+  try {
+    console.log("user -> " + user)
+    for (let month = 6; month > 0; month--) {
+
+      let url = "https://api.chess.com/pub/player/" + user + "/games/" + year + "/0" + month;
+      console.log(url)
+      await getDataAndPersist(url);
+
+    }
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+async function getPlayers() {
+  try {
+    let users = await getData(URL_USERS)
+    let leaders = await getData(URL_LEADERS)
+    let usernames = []
+    for (let user of users) {
+      usernames.push(user.username)
+    }
+    for (let leader of leaders) {
+      usernames.push(leader.username)
+    }
+    return usernames
+  } catch (error) {
+    console.log(error)
+    return null;
+  }
 }
 
 function fillMongoDbWithJson(jsonn) {
@@ -46,10 +87,10 @@ function fillMongoDbWithJson(jsonn) {
     if (jsonn.games[i].rules == RULE) {
 
       let jsonCorrected = prepareJson(jsonn.games[i])
-     
+
       mongoClient.genericUpdateOne
         (
-          'OnlineGame',
+          ONLINE_GAME,
           jsonCorrected._id,
           jsonCorrected,
           function (err, gameId) {
@@ -61,29 +102,7 @@ function fillMongoDbWithJson(jsonn) {
 
 }
 
-function isNew(id, toReturn) {
-  console.log(id)
-  toReturn = false
-  mongoClient.genericFindOne
-    (
-      'OnlineGame',
-      { '_id': id },
-      function (err, game) {
 
-        if (game == null) {
-          toReturn = true
-          console.log(game)
-        }
-        else {
-          console.log(game.url)
-          toReturn = false
-        }
-        return toReturn
-      }
-    )
-  console.log(toReturn)
-  return toReturn
-}
 
 function prepareJson(jsonn) {
 
@@ -107,5 +126,18 @@ function prepareJson(jsonn) {
   return jsonCorrected
 }
 
-getGames ();
+async function getAllGames() {
+
+  try {
+    const players = await getPlayers()
+    for (let player of players) {
+      getGames(player);
+      //console.log(player)
+    }
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+getAllGames()
 

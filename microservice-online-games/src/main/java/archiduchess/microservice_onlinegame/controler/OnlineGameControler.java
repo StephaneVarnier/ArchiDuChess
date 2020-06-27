@@ -222,6 +222,34 @@ public class OnlineGameControler {
 		return filteredGames;
 	}
 	
+	@ApiOperation(value = "Liste les parties ayant atteint une position donnée sous format FEN")
+	@RequestMapping(value = "onlineGames/user/**/fen/**", method = RequestMethod.GET)
+	public @ResponseBody List<OnlineGame> getGamesByFenAndUsername(HttpServletRequest request) throws PGNSyntaxError, IOException {
+		
+	    String requestURL = request.getRequestURL().toString();
+	    String fenURL= requestURL.split("/fen/")[1];
+	    String user = requestURL.split("/fen/")[0].split("user/")[1];
+	    String fen = java.net.URLDecoder.decode(fenURL, StandardCharsets.UTF_8.name());
+	    log.info("FEN -------------------------> "+fen);
+	    log.info("User -------------------------> "+user);
+	    	    
+	    return getGamesbyFenAndUsername(fen, user);
+	}
+	
+	public List<OnlineGame> getGamesbyFenAndUsername(String fen, String username) throws PGNSyntaxError, IOException {
+		Iterable<OnlineGame> gamesIterable = getOnlineGamesByUsername(username);
+		
+		List<OnlineGame> filteredGames= new ArrayList<>();
+
+		for (OnlineGame onlineGame : gamesIterable) {
+			if (contains(onlineGame, fen)) 
+			{
+				filteredGames.add(onlineGame);
+			}
+		}
+		return filteredGames;
+	}
+	
 	
 
 	@ApiOperation(value = "Liste les parties ayant atteint une position donnée sous format FEN, selon un résultat")
@@ -251,7 +279,7 @@ public class OnlineGameControler {
 	
 	@ApiOperation(value = "Retourne le pourcentage de points pour une position et un joueur donné")
 	@GetMapping(value="onlineGames/fen-list-stats/{id}/{username}")
-	public @ResponseBody List<FenStat> statsIdUser(@PathVariable String id, @PathVariable String username, Model model ) throws PGNSyntaxError, IOException {
+	public @ResponseBody List<FenStat> getStatsIdUser(@PathVariable String id, @PathVariable String username ) throws PGNSyntaxError, IOException {
 		
 //		log.info("id -----------> " +id);
 //		log.info("user ---------> " +username);
@@ -261,7 +289,7 @@ public class OnlineGameControler {
 		
 		for (String fen : fens) { 
 					
-			List<OnlineGame> games = getGamesbyFen(fen);
+			List<OnlineGame> games = getGamesbyFenAndUsername(fen, username);
 			
 			double pct = pctCalculate(games, username);
 			fenStats.add(new FenStat(fen, games.size(), pct));

@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ChampionsService } from '../common/services/champions.service';
 import { Champion } from '../common/data/champion';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-champions',
@@ -11,7 +12,7 @@ export class ChampionsComponent implements OnInit {
 
   champions : Array<Champion> = new Array<Champion>();
 
-  constructor(public championsService : ChampionsService) { }
+  constructor(public championsService : ChampionsService, private router:Router) { }
 
   ngOnInit(): void {
 
@@ -20,6 +21,13 @@ export class ChampionsComponent implements OnInit {
       (data) => {this.champions = data},
       (error) => { console.log(error)}
     )
+  }
+
+  onDisplayChampion(champion : Champion) {
+    sessionStorage.setItem("champion", champion.username)
+    sessionStorage.setItem("championName", champion.name)
+    
+    this.router.navigate(['/games'])
   }
 
 }

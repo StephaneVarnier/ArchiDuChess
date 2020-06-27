@@ -6,7 +6,7 @@ $color_light :  #f0d9b5;
     width: 5*$size
 }
 
-.btn {
+.btn-secondary {
     width : $size;
    
     background-color :  $color_brown;
@@ -25,4 +25,11 @@ $color_light :  #f0d9b5;
 
 .thead-light {
     background-color: $color_brown ;
+}
+
+#backToUser {
+    margin-left : 29rem;
+    margin-top : 1em;
+    
+
 }

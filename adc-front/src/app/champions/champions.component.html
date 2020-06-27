@@ -1,19 +1,19 @@
-
-    <div class="col-sm-4" 
-        *ngFor="let champion of champions">
-
+<div class="card-columns">  <div *ngFor="let champion of champions">
+    
+   
         <div class="card">
             <div class="card-header bg-primary text-light">{{champion.name}} ({{champion.title}})</div>
             <div class="card-body">
                 {{champion.score}}
-                <br/>
-                <br/>
-                
-                <img src={{champion.avatar}}> 
+                <br />
+                <br />
+
+                <div class="container">
+                    <img src={{champion.avatar}} (click)="onDisplayChampion(champion)"/>
+                </div>
+
             </div>
         </div>
-    </div>
-
-
-
-
+  
+</div>
+</div>

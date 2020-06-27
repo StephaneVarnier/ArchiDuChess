@@ -15,20 +15,16 @@ export class GamesService {
   URL_ONLINE_GAMES = "./archiduchess/onlineGames";
   URL_STATS =   "./archiduchess/fen-list-stats"
 
-  
-
-  public getGamesByOpening (opening : string) : Observable<Game[]> {
+  public getGamesByOpeningAndUsername (opening : string, username : string) : Observable<Game[]> {
     
-    if (opening == "")  return this.http.get<Game[]>(this.URL_ONLINE_GAMES+"/user/"+sessionStorage.getItem("user"))
-    else return this.http.get<Game[]>(this.URL_ONLINE_GAMES+"/user/"+sessionStorage.getItem("user")+"/opening/"+opening)
+    if (opening == "")  return this.http.get<Game[]>(this.URL_ONLINE_GAMES+"/user/"+username)
+    else return this.http.get<Game[]>(this.URL_ONLINE_GAMES+"/user/"+username+"/opening/"+opening)
    
   }
 
-  public getGames () : Observable<Game[]> {
+  public getGamesByUsername (username : string) : Observable<Game[]> {
     
-    return this.http.get<Game[]>(this.URL_ONLINE_GAMES+"/user/"+sessionStorage.getItem("user"))
-    
-   
+    return this.http.get<Game[]>(this.URL_ONLINE_GAMES+"/user/"+username)
   }
 
   public getFens (id : number) : Observable<string[]> {
@@ -45,16 +41,16 @@ export class GamesService {
     return this.http.get<string[]>(urlSan)
   }
 
-  public getStats (id : number) : Observable<FenStat[]> {
+  public getMyStats (id : number) : Observable<FenStat[]> {
 
     let urlPct : string = this.URL_ONLINE_GAMES+"/fen-list-stats/"+id+"/"+sessionStorage.getItem("user");
     
     return this.http.get<FenStat[]>(urlPct)
   }
 
-  public getOpenings () : Observable<string[]> {
+  public getOpeningsByUsername (username : string) : Observable<string[]> {
 
-    let urlOpenings : string = this.URL_ONLINE_GAMES+"/openings/"+sessionStorage.getItem("user");
+    let urlOpenings : string = this.URL_ONLINE_GAMES+"/openings/"+username;
     
     return this.http.get<string[]>(urlOpenings)
   }

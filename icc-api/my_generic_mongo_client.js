@@ -3,9 +3,9 @@ var MongoClient = require('mongodb').MongoClient;
 var ObjectID = require('mongodb').ObjectID;
 var assert = require('assert');
 
-var mongoDbUrl = 'mongodb://127.0.0.1:27017/icc-games'; //by default
-var dbName = "icc-games" //by default
-var currentDb=null; //current MongoDB connection
+var mongoDbUrl = 'mongodb://127.0.0.1:27017/icc-games'; 
+var dbName = "icc-games" 
+var currentDb=null; 
 
 var setMongoDbUrl = function(dbUrl){
 	mongoDbUrl = dbUrl;
@@ -27,9 +27,8 @@ var executeInMongoDbConnection = function(callback_with_db) {
 		console.log("mongoDb connection error = " + err + " for dbUrl=" + mongoDbUrl );
 	}
 	assert.equal(null, err);
-	//console.log("Connected correctly to mongodb database" );
-	//currentDb = db; //with mongodb client v2.x
-	currentDb = db.db(dbName);//with mongodb client >= v3.x
+	console.log("Connected correctly to mongodb database" );
+	currentDb = db.db(dbName);
 	callback_with_db(currentDb);
 	});
   }else{
