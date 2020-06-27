@@ -27,7 +27,7 @@ var executeInMongoDbConnection = function(callback_with_db) {
 		console.log("mongoDb connection error = " + err + " for dbUrl=" + mongoDbUrl );
 	}
 	assert.equal(null, err);
-	console.log("Connected correctly to mongodb database" );
+	//console.log("Connected correctly to mongodb database" );
 	//currentDb = db; //with mongodb client v2.x
 	currentDb = db.db(dbName);//with mongodb client >= v3.x
 	callback_with_db(currentDb);
@@ -39,14 +39,18 @@ var executeInMongoDbConnection = function(callback_with_db) {
 
 var genericUpdateOne = function(collectionName,id,changes,callback_with_err_and_results) {
 	executeInMongoDbConnection( function(db) {
-		db.collection(collectionName).updateOne( { '_id' : id }, { $set : changes } ,
+		db.collection(collectionName).updateOne( 
+			{ '_id' : id }, 
+			{ $set : changes} ,
+			{upsert : true },
 			function(err, results) {
 				if(err!=null) {
 					console.log("genericUpdateOne error = " + err);
 				}
-			callback_with_err_and_results(err,results);
-			});
-		});
+				callback_with_err_and_results(err,results);
+			}
+		);
+	});
 };
 
 var genericInsertOne = function(collectionName,newOne,callback_with_err_and_newId) {

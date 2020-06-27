@@ -33,7 +33,7 @@ public class UserControler {
 		Logger log = LoggerFactory.getLogger(this.getClass());
 		
 		@ApiOperation(value = "Ajoute un utilisateur en base")
-		@PostMapping(path="/register")
+		@PostMapping(path="users/register")
 		public ResponseEntity<Void> createUser(@Valid @RequestBody User user) {
 			log.info(" =======> " + user.getUsername() + " :: " + user.getPassword() + " :: "+ user.getEmail() + " *******");
 			
@@ -58,7 +58,7 @@ public class UserControler {
 		}
 		
 		@ApiOperation(value = "Rechercher un utilisateur par son login")
-		@GetMapping(path="/user/{username}")
+		@GetMapping(path="/users/{username}")
 		public @ResponseBody Optional<User> findUserByUsername(@PathVariable String username ) {
 			Optional<User> optionalUser = userRepo.findByUsername(username);
 			 
@@ -68,7 +68,7 @@ public class UserControler {
 		}
 		
 		@ApiOperation(value = "Rechercher un utilisateur par son adresse e-mail")
-		@GetMapping(path="/user/email/{email}")
+		@GetMapping(path="/users/email/{email}")
 		public @ResponseBody Optional<User> findUserByEmail(@PathVariable String email ) {
 			Optional<User> optionalUser = userRepo.findByEmail(email);
 			 

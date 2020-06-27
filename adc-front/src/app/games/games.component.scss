@@ -1,17 +1,28 @@
-$size : 100px;
+$size : 80px;
+$color_brown : #b58863;
+$color_light :  #f0d9b5;
 
 #board1 { 
-    width: 4*$size
+    width: 5*$size
 }
 
 .btn {
     width : $size;
    
-    background-color :  #b58863;
-    color: #f0d9b5;
+    background-color :  $color_brown;
+    color: $color_light;
 }
 
 #tmoves {
     width : $size;
+    background-color: $color_light;
 
+}
+
+.table-striped {
+    background-color: $color_light;
+}
+
+.thead-light {
+    background-color: $color_brown ;
 }

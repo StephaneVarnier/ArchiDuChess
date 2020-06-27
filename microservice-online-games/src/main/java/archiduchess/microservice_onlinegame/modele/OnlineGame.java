@@ -16,6 +16,11 @@ public class OnlineGame {
 	
 	private String playerWhite;
 	private String playerBlack;
+	
+	private int eloWhite;
+	private int eloBlack;
+	
+	private String date;
 
 	private String timeControl;
 	
@@ -29,32 +34,13 @@ public class OnlineGame {
 		// TODO Auto-generated constructor stub
 	}
 
-
-	
-
-
 	public String getId() {
 		return id;
 	}
 
-
-
-
-
-
-
-
-
 	public void setId(String id) {
 		this.id = id;
 	}
-
-
-
-
-
-
-
 
 
 	public String getPlayerWhite() {
@@ -103,6 +89,54 @@ public class OnlineGame {
 
 	public void setPgn(String pgn) {
 		this.pgn = pgn;
+	}
+
+
+
+
+
+	public int getEloWhite() {
+		return eloWhite;
+	}
+
+
+
+
+
+	public void setEloWhite(int eloWhite) {
+		this.eloWhite = eloWhite;
+	}
+
+
+
+
+
+	public int getEloBlack() {
+		return eloBlack;
+	}
+
+
+
+
+
+	public void setEloBlack(int eloBlack) {
+		this.eloBlack = eloBlack;
+	}
+
+
+
+
+
+	public String getDate() {
+		return date;
+	}
+
+
+
+
+
+	public void setDate(String date) {
+		this.date = date;
 	}
 
 	

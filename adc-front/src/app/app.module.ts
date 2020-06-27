@@ -15,6 +15,8 @@ import { CenterComponent } from './center/center.component';
 import { GamesComponent } from './games/games.component';
 import { OptionsComponent } from './options/options.component';
 import { HttpClientModule } from '@angular/common/http';
+import { LoginComponent } from './login/login.component';
+import { ChampionsComponent } from './champions/champions.component';
 
 @NgModule({
   declarations: [
@@ -23,7 +25,9 @@ import { HttpClientModule } from '@angular/common/http';
     FooterComponent,
     CenterComponent,
     GamesComponent,
-    OptionsComponent
+    OptionsComponent,
+    LoginComponent,
+    ChampionsComponent
   ],
   imports: [
     BrowserModule,

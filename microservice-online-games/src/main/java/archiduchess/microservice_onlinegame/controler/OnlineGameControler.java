@@ -5,8 +5,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -15,6 +18,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,6 +27,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import archiduchess.microservice_onlinegame.configuration.ApplicationPropertiesConfiguration;
+import archiduchess.microservice_onlinegame.modele.FenStat;
 import archiduchess.microservice_onlinegame.modele.OnlineGame;
 import archiduchess.microservice_onlinegame.repository.OnlineGameRepository;
 import chesspresso.game.Game;
@@ -59,9 +64,24 @@ public class OnlineGameControler {
 		if (!og.isPresent()) throw new Exception("There is no game "+ id +" !");
 		log.info(og.toString());
 		return og;
-
-		
 	}
+	
+	@ApiOperation(value = "Recherche les ouvertures jouées par un utilisateur donné")
+	@GetMapping(path="/onlineGames/openings/{username}")
+	public @ResponseBody Set<String> getOpeningsByUser(@PathVariable String username) throws Exception {
+		
+		
+		List<String> list =  StreamSupport.stream(getOnlineGamesByUsername(username).spliterator(), false)
+		.map(e -> e.getOpening())
+		.sorted()
+		.collect(Collectors.toList());  
+		
+		Set<String> tSet = new TreeSet<String>(list);
+		
+		return tSet;
+	}
+	
+	
 	
 	@ApiOperation(value = "Recherche les positions d'une partie par id")
 	@GetMapping(path="/onlineGames/{id}/fens")
@@ -129,8 +149,6 @@ public class OnlineGameControler {
 	}
 	
 	
-	
-	
 	@ApiOperation(value = "Liste les parties d'un joueur donné avec les blancs")
 	@GetMapping(path="onlineGames/white/{username}")
 	public @ResponseBody Iterable<OnlineGame> getOnlineGamesByWhiteUsername(@PathVariable String username) {
@@ -155,6 +173,15 @@ public class OnlineGameControler {
 		return limitList(gamesIterable);
 	}
 	
+	@ApiOperation(value = "Liste les parties d'un joueur selon une ouverture donnée ")
+	@GetMapping(path="onlineGames/user/{username}/opening/{opening}")
+	public @ResponseBody List<OnlineGame> getOnlineGamesByUsernameAndOpening(@PathVariable String username, @PathVariable String opening) {
+		
+		return StreamSupport.stream(getOnlineGamesByUsername(username).spliterator(), false)
+				.filter(e -> e.getOpening().contains(opening))
+				.collect(Collectors.toList());  
+	}
+	
 	@ApiOperation(value = "Liste les parties d'un joueur donné selon la couleur et le résultat final")
 	@GetMapping(path="onlineGames/{color}/{username}/{resultat}")
 	public @ResponseBody Iterable<OnlineGame> getGamesByUsernameColorResult(@PathVariable String color, @PathVariable String username,  @PathVariable String resultat) {
@@ -177,7 +204,11 @@ public class OnlineGameControler {
 	    String fenURL= requestURL.split("onlineGames/fen/")[1];
 	    String fen = java.net.URLDecoder.decode(fenURL, StandardCharsets.UTF_8.name());
 	    log.info("FEN -------------------------> "+fen);
-	    
+	    	    
+	    return getGamesbyFen(fen);
+	}
+	
+	public List<OnlineGame> getGamesbyFen(String fen) throws PGNSyntaxError, IOException {
 		Iterable<OnlineGame> gamesIterable = onlineGameRepo.findAll();
 		
 		List<OnlineGame> filteredGames= new ArrayList<>();
@@ -188,7 +219,7 @@ public class OnlineGameControler {
 				filteredGames.add(onlineGame);
 			}
 		}
-		return limitList(filteredGames);
+		return filteredGames;
 	}
 	
 	
@@ -218,20 +249,42 @@ public class OnlineGameControler {
 		return limitList(filteredGames);
 	}
 	
+	@ApiOperation(value = "Retourne le pourcentage de points pour une position et un joueur donné")
+	@GetMapping(value="onlineGames/fen-list-stats/{id}/{username}")
+	public @ResponseBody List<FenStat> statsIdUser(@PathVariable String id, @PathVariable String username, Model model ) throws PGNSyntaxError, IOException {
+		
+//		log.info("id -----------> " +id);
+//		log.info("user ---------> " +username);
+		
+		List<String> fens = getFensById(id);
+		List<FenStat> fenStats = new ArrayList<>();
+		
+		for (String fen : fens) { 
+					
+			List<OnlineGame> games = getGamesbyFen(fen);
+			
+			double pct = pctCalculate(games, username);
+			fenStats.add(new FenStat(fen, games.size(), pct));
+			
+		}
+		
+		return fenStats;
+	}
+	
 	public boolean contains(OnlineGame onlineGame, String fen) throws PGNSyntaxError, IOException {
 
 		Game game = parseOnlineGame(onlineGame);
 		
 		game.gotoStart();
 		do  {
-			log.info(onlineGame.getId() + " --> "+game.getPosition().getFEN());
+			//log.info(onlineGame.getId() + " --> "+game.getPosition().getFEN());
 			if (game.getPosition().getFEN().contains(fen))
 				return true;
 			game.goForward();
 			
 		} while (game.hasNextMove());
 		
-		log.info(onlineGame.getId() + " --> "+game.getPosition().getFEN());
+		//log.info(onlineGame.getId() + " --> "+game.getPosition().getFEN());
 		if (game.getPosition().getFEN().contains(fen))
 			return true;
 
@@ -270,6 +323,33 @@ public class OnlineGameControler {
 			sb = sb.delete(startIndex, endIndex+start.length());
 		}
 		return sb.toString();
+	}
+	
+	public double pctCalculate(List<OnlineGame> games , String username) {
+		
+		double points = 0;
+		
+		for (OnlineGame game : games) {
+			points = points + pointsCalculate(game, username);
+		}
+		Double pct =  points/games.size() * 100;
+		return (pct);
+	}
+	
+	public double pointsCalculate(OnlineGame game, String username) {
+		
+		if (game.getPlayerWhite().equals(username)) {
+			if (game.getResultat().equals("1-0")) return 1.0;
+			if (game.getResultat().equals("0-1")) return 0.0;
+			return 0.5;
+			
+		}
+		if (game.getPlayerBlack().equals(username)) {
+			if (game.getResultat().equals("1-0")) return 0.0;
+			if (game.getResultat().equals("0-1")) return 1.0;
+			return 0.5;
+		}
+		return 0;
 	}
 	
 	
