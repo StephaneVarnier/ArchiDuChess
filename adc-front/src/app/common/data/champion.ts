@@ -7,6 +7,8 @@ export class Champion {
           public score : number,
           public title : string,
           public avatar : string,
+
+          public numberOfGames : number
           
       ) {}
     }

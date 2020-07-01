@@ -4,13 +4,17 @@
         <div class="card">
             <div class="card-header bg-primary text-light">{{champion.name}} ({{champion.title}})</div>
             <div class="card-body">
-                {{champion.score}}
+                {{champion.score}} ELO
                 <br />
                 <br />
 
                 <div class="container">
                     <img src={{champion.avatar}} (click)="onDisplayChampion(champion)"/>
+                    <br/>
+                    <span id="nbGames" >{{champion.numberOfGames}} games</span>
                 </div>
+
+                
 
             </div>
         </div>

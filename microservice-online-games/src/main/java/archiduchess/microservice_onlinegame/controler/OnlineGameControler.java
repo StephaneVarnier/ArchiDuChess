@@ -36,349 +36,408 @@ import chesspresso.pgn.PGNSyntaxError;
 import io.swagger.annotations.ApiOperation;
 
 @RestController
-@RequestMapping(path="/archiduchess")
+@RequestMapping(path = "/archiduchess")
 public class OnlineGameControler {
 
 	@Autowired
 	private OnlineGameRepository onlineGameRepo;
-	
+
 	@Autowired
 	ApplicationPropertiesConfiguration appProperties;
-	
+
 	Logger log = LoggerFactory.getLogger(this.getClass());
-	
+
 	@ApiOperation(value = "Liste toutes les parties en base.")
-	@GetMapping(path="/onlineGames")
+	@GetMapping(path = "/onlineGames")
 	public @ResponseBody Iterable<OnlineGame> getAllOnlineGames() {
-				
+
 		Iterable<OnlineGame> gamesIterable = onlineGameRepo.findAll();
 		return limitList(gamesIterable);
 	}
-	
+
 	@ApiOperation(value = "Recherche une partie par id")
-	@GetMapping(path="/onlineGames/{id}")
+	@GetMapping(path = "/onlineGames/{id}")
 	public @ResponseBody Optional<OnlineGame> getGameById(@PathVariable String id) throws Exception {
-		log.info("<----------------- "+id+" -------------->" );
+		log.info("<----------------- " + id + " -------------->");
 		Optional<OnlineGame> og = onlineGameRepo.findById(id);
-		
-		if (!og.isPresent()) throw new Exception("There is no game "+ id +" !");
-		log.info(og.toString());
+
+		if (!og.isPresent())
+			throw new Exception("There is no game " + id + " !");
+
 		return og;
 	}
-	
+
 	@ApiOperation(value = "Recherche les ouvertures jouées par un utilisateur donné")
-	@GetMapping(path="/onlineGames/openings/{username}")
+	@GetMapping(path = "/onlineGames/openings/{username}")
 	public @ResponseBody Set<String> getOpeningsByUser(@PathVariable String username) throws Exception {
-		
-		
-		List<String> list =  StreamSupport.stream(getOnlineGamesByUsername(username).spliterator(), false)
-		.map(e -> e.getOpening())
-		.sorted()
-		.collect(Collectors.toList());  
-		
+
+		List<String> list = StreamSupport.stream(getOnlineGamesByUsername(username).spliterator(), false)
+				.map(e -> e.getOpening()).sorted().collect(Collectors.toList());
+
 		Set<String> tSet = new TreeSet<String>(list);
-		
+
 		return tSet;
 	}
-	
-	
-	
+
 	@ApiOperation(value = "Recherche les positions d'une partie par id")
-	@GetMapping(path="/onlineGames/{id}/fens")
+	@GetMapping(path = "/onlineGames/{id}/fens")
 	public @ResponseBody List<String> getFensById(@PathVariable String id) throws PGNSyntaxError, IOException {
-		
+
 		Optional<OnlineGame> onlineGame = onlineGameRepo.findById(id);
 		List<String> fens = new ArrayList<>();
-		
+
 		if (onlineGame.isPresent()) {
 			Game game = this.parseOnlineGame(onlineGame.get());
-				
+
 			game.gotoStart();
-			do  {
+			do {
 				fens.add(game.getPosition().getFEN());
 				game.goForward();
 			} while (game.hasNextMove());
-			
+
 			fens.add(game.getPosition().getFEN());
 		}
-				
+
 		return fens;
 	}
-	
+
 	@ApiOperation(value = "Recherche les coups d'une partie par id sous format LAN - long annotation")
-	@GetMapping(path="/onlineGames/{id}/lans")
+	@GetMapping(path = "/onlineGames/{id}/lans")
 	public @ResponseBody List<String> getLansById(@PathVariable String id) throws PGNSyntaxError, IOException {
 		Optional<OnlineGame> onlineGame = onlineGameRepo.findById(id);
 		List<String> moves = new ArrayList<>();
-		
-		
+
 		if (onlineGame.isPresent()) {
 			Game game = this.parseOnlineGame(onlineGame.get());
-			
+
 			game.gotoStart();
-			do  {
+			do {
 				moves.add(game.getNextMove().getLAN());
 				game.goForward();
 			} while (game.hasNextMove());
 		}
-		
-		
-		//moves.add(game.getPosition().getFEN());
+
+		// moves.add(game.getPosition().getFEN());
 		return moves;
 	}
-	
+
 	@ApiOperation(value = "Recherche les coups d'une partie par id sous format SAN - short annotation")
-	@GetMapping(path="/onlineGames/{id}/sans")
+	@GetMapping(path = "/onlineGames/{id}/sans")
 	public @ResponseBody List<String> getSansById(@PathVariable String id) throws PGNSyntaxError, IOException {
 		Optional<OnlineGame> onlineGame = onlineGameRepo.findById(id);
 		List<String> moves = new ArrayList<>();
-		
-		
+
 		if (onlineGame.isPresent()) {
 			Game game = this.parseOnlineGame(onlineGame.get());
-			
+
 			game.gotoStart();
-			do  {
+			while (game.hasNextMove()) {
 				moves.add(game.getNextMove().getSAN());
 				game.goForward();
-			} while (game.hasNextMove());
+			}
+			;
 		}
-		
-		//moves.add(game.getPosition().getFEN());
+
+		// moves.add(game.getPosition().getFEN());
 		return moves;
 	}
-	
-	
+
 	@ApiOperation(value = "Liste les parties d'un joueur donné avec les blancs")
-	@GetMapping(path="onlineGames/white/{username}")
+	@GetMapping(path = "onlineGames/white/{username}")
 	public @ResponseBody Iterable<OnlineGame> getOnlineGamesByWhiteUsername(@PathVariable String username) {
-	
+
 		Iterable<OnlineGame> gamesIterable = onlineGameRepo.findByPlayerWhite(username);
-        return limitList(gamesIterable);
+		return limitList(gamesIterable);
 	}
-	
+
 	@ApiOperation(value = "Liste les parties d'un joueur donné avec les noirs")
-	@GetMapping(path="onlineGames/black/{username}")
+	@GetMapping(path = "onlineGames/black/{username}")
 	public @ResponseBody Iterable<OnlineGame> getOnlineGamesByBlackUsername(@PathVariable String username) {
-		
+
 		Iterable<OnlineGame> gamesIterable = onlineGameRepo.findByPlayerBlack(username);
 		return limitList(gamesIterable);
 	}
-	
+
 	@ApiOperation(value = "Liste les parties d'un joueur donné")
-	@GetMapping(path="onlineGames/user/{username}")
+	@GetMapping(path = "onlineGames/user/{username}")
 	public @ResponseBody Iterable<OnlineGame> getOnlineGamesByUsername(@PathVariable String username) {
-		
+
 		Iterable<OnlineGame> gamesIterable = onlineGameRepo.findByPlayerBlackOrPlayerWhite(username, username);
 		return limitList(gamesIterable);
 	}
-	
+
 	@ApiOperation(value = "Liste les parties d'un joueur selon une ouverture donnée ")
-	@GetMapping(path="onlineGames/user/{username}/opening/{opening}")
-	public @ResponseBody List<OnlineGame> getOnlineGamesByUsernameAndOpening(@PathVariable String username, @PathVariable String opening) {
-		
+	@GetMapping(path = "onlineGames/user/{username}/opening/{opening}")
+	public @ResponseBody List<OnlineGame> getOnlineGamesByUsernameAndOpening(@PathVariable String username,
+			@PathVariable String opening) {
+
 		return StreamSupport.stream(getOnlineGamesByUsername(username).spliterator(), false)
-				.filter(e -> e.getOpening().contains(opening))
-				.collect(Collectors.toList());  
+				.filter(e -> e.getOpening().contains(opening)).collect(Collectors.toList());
 	}
-	
+
 	@ApiOperation(value = "Liste les parties d'un joueur donné selon la couleur et le résultat final")
-	@GetMapping(path="onlineGames/{color}/{username}/{resultat}")
-	public @ResponseBody Iterable<OnlineGame> getGamesByUsernameColorResult(@PathVariable String color, @PathVariable String username,  @PathVariable String resultat) {
-		
-		Iterable<OnlineGame> gamesIterable ;
-		if (color.equals("black")) { 
+	@GetMapping(path = "onlineGames/{color}/{username}/{resultat}")
+	public @ResponseBody Iterable<OnlineGame> getGamesByUsernameColorResult(@PathVariable String color,
+			@PathVariable String username, @PathVariable String resultat) {
+
+		Iterable<OnlineGame> gamesIterable;
+		if (color.equals("black")) {
 			gamesIterable = onlineGameRepo.findByPlayerBlackAndResultat(username, resultat);
-		} 
-		else {
+		} else {
 			gamesIterable = onlineGameRepo.findByPlayerWhiteAndResultat(username, resultat);
 		}
 		return limitList(gamesIterable);
 	}
-	
+
 	@ApiOperation(value = "Liste les parties ayant atteint une position donnée sous format FEN")
 	@RequestMapping(value = "onlineGames/fen/**", method = RequestMethod.GET)
 	public @ResponseBody List<OnlineGame> getGamesByFen(HttpServletRequest request) throws PGNSyntaxError, IOException {
-		
-	    String requestURL = request.getRequestURL().toString();
-	    String fenURL= requestURL.split("onlineGames/fen/")[1];
-	    String fen = java.net.URLDecoder.decode(fenURL, StandardCharsets.UTF_8.name());
-	    log.info("FEN -------------------------> "+fen);
-	    	    
-	    return getGamesbyFen(fen);
+
+		String requestURL = request.getRequestURL().toString();
+		String fenURL = requestURL.split("onlineGames/fen/")[1];
+		String fen = java.net.URLDecoder.decode(fenURL, StandardCharsets.UTF_8.name());
+		log.info("FEN -------------------------> " + fen);
+
+		return getGamesbyFen(fen);
 	}
-	
+
 	public List<OnlineGame> getGamesbyFen(String fen) throws PGNSyntaxError, IOException {
 		Iterable<OnlineGame> gamesIterable = onlineGameRepo.findAll();
-		
-		List<OnlineGame> filteredGames= new ArrayList<>();
+
+		List<OnlineGame> filteredGames = new ArrayList<>();
 
 		for (OnlineGame onlineGame : gamesIterable) {
-			if (contains(onlineGame, fen)) 
-			{
-				filteredGames.add(onlineGame);
+			// log.info(onlineGame.getId() + " " + onlineGame.getPlayerWhite() + " - " +
+			// onlineGame.getPlayerBlack());
+			try {
+				if (contains(onlineGame, fen))
+					filteredGames.add(onlineGame);
+			} catch (RuntimeException error) {
+				log.info(error.getMessage());
 			}
+			;
+
 		}
 		return filteredGames;
 	}
-	
+
 	@ApiOperation(value = "Liste les parties ayant atteint une position donnée sous format FEN")
 	@RequestMapping(value = "onlineGames/user/**/fen/**", method = RequestMethod.GET)
-	public @ResponseBody List<OnlineGame> getGamesByFenAndUsername(HttpServletRequest request) throws PGNSyntaxError, IOException {
-		
-	    String requestURL = request.getRequestURL().toString();
-	    String fenURL= requestURL.split("/fen/")[1];
-	    String user = requestURL.split("/fen/")[0].split("user/")[1];
-	    String fen = java.net.URLDecoder.decode(fenURL, StandardCharsets.UTF_8.name());
-	    log.info("FEN -------------------------> "+fen);
-	    log.info("User -------------------------> "+user);
-	    	    
-	    return getGamesbyFenAndUsername(fen, user);
+	public @ResponseBody List<OnlineGame> getGamesByFenAndUsername(HttpServletRequest request)
+			throws PGNSyntaxError, IOException {
+
+		String requestURL = request.getRequestURL().toString();
+		String fenURL = requestURL.split("/fen/")[1];
+		String user = requestURL.split("/fen/")[0].split("user/")[1];
+		String fen = java.net.URLDecoder.decode(fenURL, StandardCharsets.UTF_8.name());
+		log.info("FEN -------------------------> " + fen);
+		log.info("User -------------------------> " + user);
+
+		return getGamesbyFenAndUsername(fen, user);
 	}
-	
+
+	@ApiOperation(value = "Liste les coups joués par un joueur donné dans les parties ayant atteint une position donnée sous format FEN")
+	@RequestMapping(value = "onlineGames/nextMoves/user/**/fen/**", method = RequestMethod.GET)
+	public @ResponseBody List<String> getNextMovesByFenAndUsername(HttpServletRequest request)
+			throws PGNSyntaxError, IOException {
+
+		String requestURL = request.getRequestURL().toString();
+		String fenURL = requestURL.split("/fen/")[1];
+		String user = requestURL.split("/fen/")[0].split("user/")[1];
+		String fen = java.net.URLDecoder.decode(fenURL, StandardCharsets.UTF_8.name());
+
+		List<String> nextMoves = new ArrayList<String>();
+		List<OnlineGame> games = getGamesbyFenAndUsername(fen, user);
+		for (OnlineGame game : games) {
+			int moveNumber = getMoveNumber(game, fen);
+			if (moveNumber >= 0) {
+				log.info("id --> " + game.getId());
+				log.info(getSansById(game.getId()).toString());
+				nextMoves.add(getSansById(game.getId()).get(moveNumber));
+			}
+		}
+		return nextMoves;
+	}
+
 	public List<OnlineGame> getGamesbyFenAndUsername(String fen, String username) throws PGNSyntaxError, IOException {
 		Iterable<OnlineGame> gamesIterable = getOnlineGamesByUsername(username);
-		
-		List<OnlineGame> filteredGames= new ArrayList<>();
+
+		List<OnlineGame> filteredGames = new ArrayList<>();
 
 		for (OnlineGame onlineGame : gamesIterable) {
-			if (contains(onlineGame, fen)) 
-			{
-				filteredGames.add(onlineGame);
+			try {
+				// log.info(onlineGame.getId());
+				// log.info(""+contains(onlineGame, fen));
+				if (contains(onlineGame, fen)) {
+					filteredGames.add(onlineGame);
+
+				}
+			} catch (RuntimeException error) {
+				log.info(error.getMessage());
 			}
+			;
+
 		}
 		return filteredGames;
 	}
-	
-	
 
 	@ApiOperation(value = "Liste les parties ayant atteint une position donnée sous format FEN, selon un résultat")
 	@RequestMapping(value = "onlineGames/{resultat}/fen/**", method = RequestMethod.GET)
-	public @ResponseBody List<OnlineGame> getGamesByFenAndResultat(HttpServletRequest request) throws PGNSyntaxError, IOException {
-		
-	    String requestURL = request.getRequestURL().toString();
-	    String fenURL0= requestURL.split("/fen/")[0];
-	    String fenURL1= requestURL.split("/fen/")[1];
-	    
-	    String res= fenURL0.split("onlineGames/")[1];
-	    String fen = java.net.URLDecoder.decode(fenURL1, StandardCharsets.UTF_8.name());
-	    log.info("FEN -------------------------> "+fen);
-	    
+	public @ResponseBody List<OnlineGame> getGamesByFenAndResultat(HttpServletRequest request)
+			throws PGNSyntaxError, IOException {
+
+		String requestURL = request.getRequestURL().toString();
+		String fenURL0 = requestURL.split("/fen/")[0];
+		String fenURL1 = requestURL.split("/fen/")[1];
+
+		String res = fenURL0.split("onlineGames/")[1];
+		String fen = java.net.URLDecoder.decode(fenURL1, StandardCharsets.UTF_8.name());
+		log.info("FEN -------------------------> " + fen);
+
 		Iterable<OnlineGame> gamesIterable = onlineGameRepo.findByResultat(res);
-		
-		List<OnlineGame> filteredGames= new ArrayList<>();
+
+		List<OnlineGame> filteredGames = new ArrayList<>();
 
 		for (OnlineGame onlineGame : gamesIterable) {
-			if (contains(onlineGame, fen)) 
-			{
-				filteredGames.add(onlineGame);
+			try {
+				if (contains(onlineGame, fen)) {
+					filteredGames.add(onlineGame);
+				}
+			} catch (RuntimeException error) {
+				log.info(error.getMessage());
 			}
+			;
+
 		}
 		return limitList(filteredGames);
 	}
-	
+
 	@ApiOperation(value = "Retourne le pourcentage de points pour une position et un joueur donné")
-	@GetMapping(value="onlineGames/fen-list-stats/{id}/{username}")
-	public @ResponseBody List<FenStat> getStatsIdUser(@PathVariable String id, @PathVariable String username ) throws PGNSyntaxError, IOException {
-		
-//		log.info("id -----------> " +id);
-//		log.info("user ---------> " +username);
-		
+	@GetMapping(value = "onlineGames/fen-list-stats/{id}/{username}")
+	public @ResponseBody List<FenStat> getStatsIdUser(@PathVariable String id, @PathVariable String username)
+			throws PGNSyntaxError, IOException {
+
 		List<String> fens = getFensById(id);
 		List<FenStat> fenStats = new ArrayList<>();
-		
-		for (String fen : fens) { 
-					
+
+		for (String fen : fens) {
+
 			List<OnlineGame> games = getGamesbyFenAndUsername(fen, username);
-			
+
 			double pct = pctCalculate(games, username);
 			fenStats.add(new FenStat(fen, games.size(), pct));
-			
+
 		}
-		
+
 		return fenStats;
 	}
-	
+
 	public boolean contains(OnlineGame onlineGame, String fen) throws PGNSyntaxError, IOException {
 
-		Game game = parseOnlineGame(onlineGame);
-		
-		game.gotoStart();
-		do  {
-			//log.info(onlineGame.getId() + " --> "+game.getPosition().getFEN());
+		try {
+			Game game = parseOnlineGame(onlineGame);
+
+			game.gotoStart();
+			do {
+
+				if (game.getPosition().getFEN().contains(fen))
+					return true;
+				game.goForward();
+
+			} while (game.hasNextMove());
+
 			if (game.getPosition().getFEN().contains(fen))
 				return true;
-			game.goForward();
-			
-		} while (game.hasNextMove());
-		
-		//log.info(onlineGame.getId() + " --> "+game.getPosition().getFEN());
-		if (game.getPosition().getFEN().contains(fen))
-			return true;
 
-		return false;
+			return false;
+		} catch (RuntimeException e) {
+			log.info(e.getMessage());
+			return false;
+		}
 	}
-	
-	
+
+	public int getMoveNumber(OnlineGame onlineGame, String fen) throws PGNSyntaxError, IOException {
+
+		Game game = parseOnlineGame(onlineGame);
+
+		game.gotoStart();
+		int moveNumber = 0;
+		do {
+
+			if (game.getPosition().getFEN().contains(fen))
+				return moveNumber;
+			game.goForward();
+			moveNumber++;
+
+		} while (game.hasNextMove());
+
+		if (game.getPosition().getFEN().contains(fen))
+			return moveNumber;
+
+		return -1;
+	}
+
 	public Game parseOnlineGame(OnlineGame onlineGame) throws PGNSyntaxError, IOException {
 		String pgnStr = removeClk(onlineGame.getPgn(), "{[", "]}");
+//		if (onlineGame.getId().equals("4578498224")) 
+//				pgnStr=pgnStr.split("40...")[0];
+//		log.info(pgnStr);
 
 		InputStream is = new ByteArrayInputStream(pgnStr.getBytes());
 		PGNReader pgn = new PGNReader(is, "");
-		return pgn.parseGame();
-		
-	}
-	
 
-	
-	// limit the size of the returned list 
-	private List<OnlineGame> limitList(Iterable<OnlineGame> gamesIterable) {
-		  	List gamesList = StreamSupport 
-	                .stream(gamesIterable.spliterator(), false) 
-	                .collect(Collectors.toList()); 
-	        
-		    int limit = Math.min(appProperties.getGamesNumberLimit(), gamesList.size());
-	        List<OnlineGame> limitedList = gamesList.subList(0, limit);
-	        return limitedList;
+		return pgn.parseGame();
+
 	}
-	
-	
+
+	// limit the size of the returned list
+	private List<OnlineGame> limitList(Iterable<OnlineGame> gamesIterable) {
+		List gamesList = StreamSupport.stream(gamesIterable.spliterator(), false).collect(Collectors.toList());
+
+		int limit = Math.min(appProperties.getGamesNumberLimit(), gamesList.size());
+		List<OnlineGame> limitedList = gamesList.subList(0, limit);
+		return limitedList;
+	}
+
 	public static String removeClk(String str, String start, String end) {
 		StringBuilder sb = new StringBuilder(str);
 		while (sb.toString().contains(end)) {
 			int endIndex = sb.lastIndexOf(end);
 			int startIndex = sb.lastIndexOf(start);
-			sb = sb.delete(startIndex, endIndex+start.length());
+			sb = sb.delete(startIndex, endIndex + start.length());
 		}
 		return sb.toString();
 	}
-	
-	public double pctCalculate(List<OnlineGame> games , String username) {
-		
+
+	public double pctCalculate(List<OnlineGame> games, String username) {
+
 		double points = 0;
-		
+
 		for (OnlineGame game : games) {
 			points = points + pointsCalculate(game, username);
 		}
-		Double pct =  points/games.size() * 100;
+		Double pct = points / games.size() * 100;
 		return (pct);
 	}
-	
+
 	public double pointsCalculate(OnlineGame game, String username) {
-		
+
 		if (game.getPlayerWhite().equals(username)) {
-			if (game.getResultat().equals("1-0")) return 1.0;
-			if (game.getResultat().equals("0-1")) return 0.0;
+			if (game.getResultat().equals("1-0"))
+				return 1.0;
+			if (game.getResultat().equals("0-1"))
+				return 0.0;
 			return 0.5;
-			
+
 		}
 		if (game.getPlayerBlack().equals(username)) {
-			if (game.getResultat().equals("1-0")) return 0.0;
-			if (game.getResultat().equals("0-1")) return 1.0;
+			if (game.getResultat().equals("1-0"))
+				return 0.0;
+			if (game.getResultat().equals("0-1"))
+				return 1.0;
 			return 0.5;
 		}
 		return 0;
 	}
-	
-	
+
 }

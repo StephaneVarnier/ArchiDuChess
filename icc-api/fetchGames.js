@@ -1,7 +1,17 @@
 const fetch = require("node-fetch");
 const mongoClient = require('./my_generic_mongo_client')
+const winston = require('winston')
 const RULE = "chess"
 
+const logConfiguration = {
+  'transports': [
+    new winston.transports.File({
+      filename : './logs/fetchGames.log'
+    })
+  ]
+}
+
+const logger = winston.createLogger(logConfiguration);
 //var user = "tiou"
 var year = "2020"
 
@@ -25,12 +35,20 @@ const ONLINE_GAME = 'OnlineGame'
 async function getData(url) {
   try {
     const response = await fetch(url);
+
+    logger.info("response ====> ");
+    logger.info(response.text());
+
     const json = await response.json();
+
+    // logger.info("response.json() ====> ");
+    // logger.info(response.body);
 
     return (json);
 
   } catch (error) {
-    console.log(error);
+    logger.info("error ===> " + error);
+    
     return null;
   }
 };
@@ -38,27 +56,27 @@ async function getData(url) {
 async function getDataAndPersist(url) {
   try {
     let json = await getData(url);
-    console.log(url);
-    console.log(json.games.length)
+    logger.info(url)
+    logger.info(json.games.length)
     if (json != null) fillMongoDbWithJson(json);
   }
   catch (error) {
-    console.log(error);
+    logger.info(error);
   }
 }
 
 async function getGames(user) {
   try {
-    console.log("user -> " + user)
+    logger.info("user -> " + user)
     for (let month = 6; month > 0; month--) {
 
       let url = "https://api.chess.com/pub/player/" + user + "/games/" + year + "/0" + month;
-      console.log(url)
+      logger.info(url)
       await getDataAndPersist(url);
 
     }
   } catch (error) {
-    console.log(error);
+    logger.info(error);
   }
 }
 
@@ -75,7 +93,7 @@ async function getPlayers() {
     }
     return usernames
   } catch (error) {
-    console.log(error)
+    logger.info(error)
     return null;
   }
 }
@@ -94,7 +112,7 @@ function fillMongoDbWithJson(jsonn) {
           jsonCorrected._id,
           jsonCorrected,
           function (err, gameId) {
-            if (err) console.log(`error on game : ${gameId} --> ${err}`)
+            if (err) logger.info(`error on game : ${gameId} --> ${err}`)
           }
         )
     }
@@ -135,7 +153,7 @@ async function getAllGames() {
       //console.log(player)
     }
   } catch (error) {
-    console.log(error);
+    logger.info(error);
   }
 }
 

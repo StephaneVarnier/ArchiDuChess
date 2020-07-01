@@ -7,6 +7,10 @@ import { now } from 'jquery';
 import { DatePipe } from '@angular/common';
 import { filter } from 'rxjs/operators';
 import { from } from 'rxjs';
+import { ChampionsService } from '../common/services/champions.service';
+import { StatisticsService } from '../common/services/statistics.service';
+import { Champion } from '../common/data/champion';
+import { SanStat } from '../common/data/SanStat';
 
 
 declare var ChessBoard: any;
@@ -17,6 +21,7 @@ const ALL_OPENINGS = "- - -"
 const DRAW = "1/2-1/2"
 const WHITE_VICTORY = "1-0"
 const BLACK_VICTORY = "0-1"
+const PROPOSED_MOVES_NUMBER = 3
 
 
 @Component({
@@ -54,9 +59,10 @@ export class GamesComponent implements OnInit {
   games  : Array<Game> = new Array<Game>();
   stats: Array<FenStat> = new Array<FenStat>();
   fullMoves: Array<FullMove> = new Array<FullMove>();
-  
+  champions : Array<Champion> = new Array<Champion>();
+  sanstats : Array<SanStat> = new Array<SanStat>();
 
-  constructor(public gamesService: GamesService) { }
+  constructor(public gamesService: GamesService, public championsService : ChampionsService, public statisticsService : StatisticsService ) { }
 
   onChangeSelectedOpening() {
     
@@ -68,7 +74,7 @@ export class GamesComponent implements OnInit {
       (data) => { 
         this.games = data; 
         this.openingGamesNumber = this.games.length;
-        this.openingEfficiency = this.calculateEfficiency(this.games) 
+        this.openingEfficiency = this.calculateEfficiency(this.games, this.username) 
       },
       (error) => { console.log(error) }
     );
@@ -127,7 +133,7 @@ export class GamesComponent implements OnInit {
         (data) => { 
           this.games = data;
           this.openingGamesNumber = this.games.length;
-          this.openingEfficiency = this.calculateEfficiency(this.games) 
+          this.openingEfficiency = this.calculateEfficiency(this.games, this.username) 
         },
         (error) => { console.log(error) }
       );
@@ -140,6 +146,12 @@ export class GamesComponent implements OnInit {
         (error) => { console.log(error) },
         () => this.openings.splice(0,0,ALL_OPENINGS)
       );
+
+      this.championsService.getChampions()
+      .subscribe(
+        (data) => {   this.champions = data   },
+        (error) => { console.log(error)}
+      )
 
     this.startGame();
   }
@@ -175,6 +187,8 @@ export class GamesComponent implements OnInit {
       );
       this.displayStats();
 
+      
+
     }
   }
 
@@ -191,7 +205,6 @@ export class GamesComponent implements OnInit {
 
     }
   }
-
 
   lastMoveGame(): void {
     if (this.fens.length > 0) {
@@ -216,6 +229,11 @@ export class GamesComponent implements OnInit {
       console.log(this.playedGamesByPosition)
       this.points = this.stats[this.moveNumber + 1].points / 100
       console.log(this.points)
+
+      console.log(this.fens[this.moveNumber + 1])
+
+      this.sanstats = this.statisticsService.getNextSanStatsByFen(this.fens[this.moveNumber + 1], this.champions)
+      console.log(this.fens[this.moveNumber + 1] + " --> " + this.sanstats)
     }
   }
 
@@ -251,23 +269,24 @@ export class GamesComponent implements OnInit {
     }
   }
 
-  calculateEfficiency(games : Game[]) : number {
+  calculateEfficiency(games : Game[], username : string) : number {
     if (games.length == 0) return 0;
 
     let points : number = 0;
-    let user = sessionStorage.getItem("user")
+    
     for (let g of games)  {
       if (g.resultat == DRAW) points+=0.5
-      if (g.playerWhite == user && g.resultat == WHITE_VICTORY) points++
-      if (g.playerBlack == user && g.resultat == BLACK_VICTORY) points++
+      if (g.playerWhite == username && g.resultat == WHITE_VICTORY) points++
+      if (g.playerBlack == username && g.resultat == BLACK_VICTORY) points++
     }
     return points/games.length
 }  
   
-
   reverseColors(): void {
     this.myBoard.flip()
     this.orientation === "white" ? this.orientation = "black" : this.orientation = "white"
   }
+
+
 
 }
