@@ -6,7 +6,7 @@ import { FenStat } from '../common/data/fenStat';
 import { now } from 'jquery';
 import { DatePipe } from '@angular/common';
 import { filter } from 'rxjs/operators';
-import { from } from 'rxjs';
+import { from, forkJoin } from 'rxjs';
 import { ChampionsService } from '../common/services/champions.service';
 import { StatisticsService } from '../common/services/statistics.service';
 import { Champion } from '../common/data/champion';
@@ -61,6 +61,7 @@ export class GamesComponent implements OnInit {
   fullMoves: Array<FullMove> = new Array<FullMove>();
   champions : Array<Champion> = new Array<Champion>();
   sanstats : Array<SanStat> = new Array<SanStat>();
+  nextMoves: Array<String> = new Array<String>();
 
   constructor(public gamesService: GamesService, public championsService : ChampionsService, public statisticsService : StatisticsService ) { }
 
@@ -232,8 +233,8 @@ export class GamesComponent implements OnInit {
 
       console.log(this.fens[this.moveNumber + 1])
 
-      this.sanstats = this.statisticsService.getNextSanStatsByFen(this.fens[this.moveNumber + 1], this.champions)
-      console.log(this.fens[this.moveNumber + 1] + " --> " + this.sanstats)
+      //this.getNextMovesByFen(this.fens[this.moveNumber + 1], this.champions)
+     // console.log("--> " + JSON.stringify(this.sanstats))
     }
   }
 
@@ -287,6 +288,47 @@ export class GamesComponent implements OnInit {
     this.orientation === "white" ? this.orientation = "black" : this.orientation = "white"
   }
 
+  getNextMovesByFen(fen: string, champions: Array<Champion>) {
+    
+    let observableBatch = []
 
+    for (let champion of champions) {
+      //console.log(JSON.stringify(champion))
+      observableBatch.push(this.statisticsService.getNextMovesByFenAndUsername(fen, champion.username))
+      
+    }
+
+    forkJoin(observableBatch).subscribe
+    (
+      (data: String[]) => 
+      {  
+        //console.log("data : "+JSON.stringify(data)); 
+        this.nextMoves.concat(data)
+        this.sanstats = this.getNextSanStatsByFen(fen, champions)
+      },
+      
+    )
+  
+    
+  }
+
+  getNextSanStatsByFen(fen: string, champions: Array<Champion>): SanStat[] {
+    
+    //this.getNextMovesByFen(fen, champions)
+
+    console.log("NextMoves ---------------->");
+    console.log( JSON.stringify(this.nextMoves));
+    let sanstats: Array<SanStat> = new Array<SanStat>();
+
+    let nextMovesSet = new Set(this.nextMoves)
+    for (let move of nextMovesSet) {
+      let nb: number = this.nextMoves.filter(x => x == move).length
+      sanstats.push(new SanStat(move, nb))
+
+    }
+
+    return sanstats
+
+  }
 
 }

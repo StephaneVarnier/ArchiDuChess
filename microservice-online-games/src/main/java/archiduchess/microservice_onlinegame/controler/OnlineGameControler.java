@@ -58,7 +58,7 @@ public class OnlineGameControler {
 	@ApiOperation(value = "Recherche une partie par id")
 	@GetMapping(path = "/onlineGames/{id}")
 	public @ResponseBody Optional<OnlineGame> getGameById(@PathVariable String id) throws Exception {
-		log.info("<----------------- " + id + " -------------->");
+		//log.info("<----------------- " + id + " -------------->");
 		Optional<OnlineGame> og = onlineGameRepo.findById(id);
 
 		if (!og.isPresent())
@@ -196,7 +196,7 @@ public class OnlineGameControler {
 		String requestURL = request.getRequestURL().toString();
 		String fenURL = requestURL.split("onlineGames/fen/")[1];
 		String fen = java.net.URLDecoder.decode(fenURL, StandardCharsets.UTF_8.name());
-		log.info("FEN -------------------------> " + fen);
+		//log.info("FEN -------------------------> " + fen);
 
 		return getGamesbyFen(fen);
 	}
@@ -213,7 +213,7 @@ public class OnlineGameControler {
 				if (contains(onlineGame, fen))
 					filteredGames.add(onlineGame);
 			} catch (RuntimeException error) {
-				log.info(error.getMessage());
+				//log.info(error.getMessage());
 			}
 			;
 
@@ -230,11 +230,33 @@ public class OnlineGameControler {
 		String fenURL = requestURL.split("/fen/")[1];
 		String user = requestURL.split("/fen/")[0].split("user/")[1];
 		String fen = java.net.URLDecoder.decode(fenURL, StandardCharsets.UTF_8.name());
-		log.info("FEN -------------------------> " + fen);
-		log.info("User -------------------------> " + user);
+		//log.info("FEN -------------------------> " + fen);
+		//log.info("User -------------------------> " + user);
 
 		return getGamesbyFenAndUsername(fen, user);
 	}
+	
+	@ApiOperation(value = "Donne le coup joué dans une partie et une position donnée sous format FEN")
+	@RequestMapping(value = "onlineGames/nextMove/id/**/fen/**", method = RequestMethod.GET)
+	public @ResponseBody String getNextMoveByFenAndId(HttpServletRequest request)
+			throws PGNSyntaxError, IOException {
+
+		String requestURL = request.getRequestURL().toString();
+		String fenURL = requestURL.split("/fen/")[1];
+		String id = requestURL.split("/fen/")[0].split("id/")[1];
+		String fen = java.net.URLDecoder.decode(fenURL, StandardCharsets.UTF_8.name());
+		//log.info("FEN -------------------------> " + fen);
+		//log.info("id -------------------------> " + id);
+
+		return getNextMoveByFenAndId(fen, id);
+	}
+	
+	public String getNextMoveByFenAndId(String fen, String id) throws PGNSyntaxError, IOException {
+		
+		int moveNumber = getFensById(id).indexOf(fen);
+		return getSansById(id).get(moveNumber);
+	}
+	
 
 	@ApiOperation(value = "Liste les coups joués par un joueur donné dans les parties ayant atteint une position donnée sous format FEN")
 	@RequestMapping(value = "onlineGames/nextMoves/user/**/fen/**", method = RequestMethod.GET)
@@ -251,9 +273,12 @@ public class OnlineGameControler {
 		for (OnlineGame game : games) {
 			int moveNumber = getMoveNumber(game, fen);
 			if (moveNumber >= 0) {
-				log.info("id --> " + game.getId());
-				log.info(getSansById(game.getId()).toString());
-				nextMoves.add(getSansById(game.getId()).get(moveNumber));
+				//log.info("id --> " + game.getId());
+				//log.info(getSansById(game.getId()).toString());
+				if (getSansById(game.getId()).size() > moveNumber) 
+				{
+					nextMoves.add(getSansById(game.getId()).get(moveNumber));
+				}
 			}
 		}
 		return nextMoves;
@@ -292,7 +317,7 @@ public class OnlineGameControler {
 
 		String res = fenURL0.split("onlineGames/")[1];
 		String fen = java.net.URLDecoder.decode(fenURL1, StandardCharsets.UTF_8.name());
-		log.info("FEN -------------------------> " + fen);
+		//log.info("FEN -------------------------> " + fen);
 
 		Iterable<OnlineGame> gamesIterable = onlineGameRepo.findByResultat(res);
 

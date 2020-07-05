@@ -33,8 +33,9 @@
             </div>
         </div>
 
-        
-        <button *ngIf="showBack" id="backToUser" class="btn btn-primary" (click)="backToUser()">Back to my games</button>
+
+        <button *ngIf="showBack" id="backToUser" class="btn btn-primary" (click)="backToUser()">Back to my
+            games</button>
     </div>
 
 
@@ -70,12 +71,13 @@
                         <br />
                         Your efficiency with this position : {{points | percent:'1.0-2' }}
                         <br />
+
                         <!-- <br />
                 <br />
                 {{gamePGN}} -->
                     </div>
 
-                    <div class="col-sm-3">
+                    <div class="col-sm-2">
                         <table id="tmoves" class="table-bordered">
                             <thead class="thead-light">
                                 <tr>
@@ -91,9 +93,27 @@
                                 </tr>
                             </tbody>
                         </table>
-
-
                     </div>
+
+                    <!-- <div class="col-sm-2">
+                        <table id="sanStats" class="table-bordered">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>Move</th>
+                                    <th>Played</th>
+                                </tr>
+                            </thead>
+                            <tbody *ngFor="let sanstat of sanstats; index as i">
+                                <tr>
+
+                                    <td>{{ sanstat.san}}</td>
+                                    <td>{{ sanstat.playedGames }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                    </div> -->
+
                     <div *NgIf="selected"> {{selectedGame.opening}}</div>
                 </div>
             </div>
